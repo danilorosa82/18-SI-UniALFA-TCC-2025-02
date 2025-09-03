@@ -62,7 +62,7 @@ public class EstoqueController {
     public String darBaixaForm(@RequestParam(value = "filtro", required = false) String filtro, Model model) {
         List<Produto> produtos;
         if (filtro != null && !filtro.isEmpty()) {
-            // Se houver um filtro, busca no repositório (precisaremos criar este método)
+            // Se houver um filtro, busca no repositório
             produtos = produtoRepository.findByNomeContainingIgnoreCase(filtro);
         } else {
             // Senão, busca todos
