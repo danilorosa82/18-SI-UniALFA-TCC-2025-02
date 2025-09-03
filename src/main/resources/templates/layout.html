@@ -26,7 +26,7 @@
         </ul>
     </nav>
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
-        <a href="#" class="brand-link">
+        <a th:href="@{/}" class="brand-link">
             <span class="brand-text font-weight-light">AlberguePro</span>
         </a>
         
@@ -35,7 +35,7 @@
             <nav class="mt-2">
                 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a th:href="@{/}" class="nav-link">
                             <i class="nav-icon fas fa-tachometer-alt"></i>
                             <p>
                                 Dashboard
@@ -72,12 +72,11 @@
                         </ul>
                     </li>
                     <li class="nav-item">
-                    <a href="/admin/usuarios" class="nav-link">
-                        <i class="nav-icon fas fa-users"></i>
-                        <p>
-                            Gerenciar Usuários
-                        </p>
-                    </a>
+                        <a th:href="@{/admin/usuarios}" class="nav-link"> <i class="nav-icon fas fa-users"></i>
+                            <p>
+                                Gerenciar Usuários
+                            </p>
+                        </a>
                     </li>
                 </ul>
             </nav>
@@ -89,14 +88,14 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1 class="m-0">Página Inicial</h1>
+                        <h1 class="m-0" th:text="${title}">Título da Página</h1>
                     </div>
                 </div>
             </div>
         </div>
         <section class="content">
             <div class="container-fluid">
-                <div th:fragment="content">
+                <div th:replace="${content}">
                     </div>
             </div>
         </section>

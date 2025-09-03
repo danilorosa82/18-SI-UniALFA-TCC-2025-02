@@ -16,8 +16,27 @@ public class UsuarioService {
     private PasswordEncoder passwordEncoder;
 
     public void salvar(Usuario usuario) {
-        // Criptografa a senha antes de salvar no banco de dados
-        usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        // Se o usuário já existe (estamos editando)
+        if (usuario.getId() != null) {
+            Usuario usuarioExistente = usuarioRepository.findById(usuario.getId()).orElse(null);
+            // Se uma nova senha foi fornecida, criptografa e atualiza
+            if (usuario.getPassword() != null && !usuario.getPassword().isEmpty()) {
+                usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+            } else {
+                // Senão, mantém a senha antiga que já estava no banco
+                if (usuarioExistente != null) {
+                    usuario.setPassword(usuarioExistente.getPassword());
+                }
+            }
+        } else {
+            // Se é um usuário novo, apenas criptografa a senha
+            usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
+        }
+
         usuarioRepository.save(usuario);
+    }
+
+        public void excluir(Long id) {
+        usuarioRepository.deleteById(id);
     }
 }

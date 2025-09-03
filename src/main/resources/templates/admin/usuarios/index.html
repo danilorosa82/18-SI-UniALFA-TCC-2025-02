@@ -1,20 +1,27 @@
 <!DOCTYPE html>
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{layout :: layout (~{::title}, ~{::section})}">
+      th:replace="~{layout :: layout (~{::title/text()}, ~{::section})}">
 <head>
     <title>Gerenciar Usuários - AlberguePro</title>
 </head>
 <body>
     <section>
+        <div class="mb-3">
+            <a th:href="@{/admin/usuarios/novo}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Novo Usuário
+            </a>
+        </div>
+
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Lista de Usuários</h3>
-                <div class="card-tools">
-                    <a href="/admin/usuarios/novo" class="btn btn-primary">Novo Usuário</a>
-                </div>
             </div>
             <div class="card-body">
-                <table class="table table-bordered">
+                <div th:if="${#lists.isEmpty(usuarios)}" class="alert alert-info">
+                    Nenhum usuário cadastrado.
+                </div>
+
+                <table class="table table-bordered" th:if="${not #lists.isEmpty(usuarios)}">
                     <thead>
                         <tr>
                             <th>Código</th>
@@ -29,7 +36,17 @@
                             <td th:text="${usuario.username}">Admin</td>
                             <td th:text="${usuario.role}">ADMIN</td>
                             <td>
-                                </td>
+                                <a th:href="@{/admin/usuarios/editar/{id}(id=${usuario.id})}" class="btn btn-warning btn-sm">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                
+                                <form th:action="@{/admin/usuarios/excluir/{id}(id=${usuario.id})}" method="post" style="display: inline-block;">
+                                    <button type="submit" class="btn btn-danger btn-sm"
+                                            onclick="return confirm('Tem certeza que deseja excluir este usuário?');">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                     </tbody>
                 </table>

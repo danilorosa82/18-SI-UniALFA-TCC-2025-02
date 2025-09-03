@@ -8,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/admin/usuarios")
@@ -35,8 +37,24 @@ public class UsuarioController {
 
     @PostMapping("/salvar")
         public String salvarUsuario(Usuario usuario) {
-            // Agora chama o service, que irá criptografar a senha
             usuarioService.salvar(usuario);
             return "redirect:/admin/usuarios";
+    }
+
+    @GetMapping("/editar/{id}")
+    public String editarUsuarioForm(@PathVariable("id") Long id, Model model) {
+        Optional<Usuario> usuario = usuarioRepository.findById(id);
+        if (usuario.isPresent()) {
+            model.addAttribute("usuario", usuario.get());
+            return "admin/usuarios/form"; // Reutiliza o mesmo formulário de cadastro
+        } else {
+            return "redirect:/admin/usuarios"; // Redireciona se não encontrar o usuário
+        }
+    }
+
+        @PostMapping("/excluir/{id}")
+    public String excluirUsuario(@PathVariable("id") Long id) {
+        usuarioService.excluir(id);
+        return "redirect:/admin/usuarios";
     }
 }
