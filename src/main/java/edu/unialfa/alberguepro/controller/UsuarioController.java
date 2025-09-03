@@ -2,6 +2,8 @@ package edu.unialfa.alberguepro.controller;
 
 import edu.unialfa.alberguepro.model.Usuario;
 import edu.unialfa.alberguepro.repository.UsuarioRepository;
+import edu.unialfa.alberguepro.service.UsuarioService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,6 +18,9 @@ public class UsuarioController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private UsuarioService usuarioService;
+
     @GetMapping
     public String listarUsuarios(Model model) {
         model.addAttribute("usuarios", usuarioRepository.findAll());
@@ -29,9 +34,9 @@ public class UsuarioController {
     }
 
     @PostMapping("/salvar")
-    public String salvarUsuario(Usuario usuario) {
-        // PROVISÓRIO - A SENHA NÃO É CRIPTOGRAFADA
-        usuarioRepository.save(usuario);
-        return "redirect:/admin/usuarios";
+        public String salvarUsuario(Usuario usuario) {
+            // Agora chama o service, que irá criptografar a senha
+            usuarioService.salvar(usuario);
+            return "redirect:/admin/usuarios";
     }
 }

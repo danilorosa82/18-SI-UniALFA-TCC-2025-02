@@ -9,10 +9,19 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    @Bean
+public PasswordEncoder passwordEncoder() {
+    return new BCryptPasswordEncoder();
+}
+
+
 
 @Bean
 public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -37,19 +46,20 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
 
 @Bean
 public UserDetailsService userDetailsService() {
-    // Cria um usuário comum
+    // Busca o nosso bean de PasswordEncoder
+    PasswordEncoder encoder = passwordEncoder();
+
+    // Cria um usuário comum com senha criptografada
     UserDetails user =
-            User.withDefaultPasswordEncoder()
-                    .username("user")
-                    .password("password")
+            User.withUsername("user")
+                    .password(encoder.encode("password"))
                     .roles("USER")
                     .build();
 
-    // Cria um usuário administrador
+    // Cria um usuário administrador com senha criptografada
     UserDetails admin =
-            User.withDefaultPasswordEncoder()
-                    .username("admin")
-                    .password("admin123")
+            User.withUsername("admin")
+                    .password(encoder.encode("admin123"))
                     .roles("ADMIN")
                     .build();
 
