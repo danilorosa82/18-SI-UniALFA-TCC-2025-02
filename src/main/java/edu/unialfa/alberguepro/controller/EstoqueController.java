@@ -13,9 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -43,7 +41,7 @@ public class EstoqueController {
     @PostMapping("/salvar")
     public String salvarProduto(Produto produto) {
         produtoRepository.save(produto);
-        // CORREÇÃO: Redireciona para a lista de produtos, não para o formulário.
+        // Redireciona para a lista de produtos
         return "redirect:/estoque";
     }
 
@@ -74,8 +72,7 @@ public class EstoqueController {
     }
 
     @PostMapping("/dar-baixa")
-    public String processarBaixaIndividual(@RequestParam("produtoId") Long produtoId,
-                                           @RequestParam("quantidade") Integer quantidade) {
+    public String processarBaixaIndividual(@RequestParam("produtoId") Long produtoId, @RequestParam("quantidade") Integer quantidade) {
         estoqueService.darBaixa(produtoId, quantidade);
         // Redireciona de volta para a página de baixa para continuar o trabalho
         return "redirect:/estoque/baixa";
