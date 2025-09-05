@@ -1,4 +1,6 @@
+<!-- Página de erro genérica -->
 <!DOCTYPE html>
+<!-- Puxa o layout principal -->
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout :: layout (~{::title/text()}, ~{::section})}">
 <head>
@@ -14,10 +16,12 @@
                 Ocorreu um erro inesperado. Nossa equipe já foi notificada.
                 Por favor, tente novamente mais tarde ou volte para a página inicial.
             </p>
+            <!-- Detalhes do erro (só pra gente ver) -->
             <p>
                 <b>Detalhes do erro (para desenvolvimento):</b>
                 <em th:text="${exception.message}">Mensagem do Erro</em>
             </p>
+            <!-- Botão pra voltar pra home -->
             <a th:href="@{/}" class="btn btn-primary">Voltar para a Página Inicial</a>
         </div>
     </div>

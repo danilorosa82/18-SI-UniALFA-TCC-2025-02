@@ -1,4 +1,6 @@
+<!-- Formulário de produto (novo ou edição) -->
 <!DOCTYPE html>
+<!-- Puxa o layout principal -->
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org"
     th:replace="~{layout :: layout (~{::title/text()}, ~{::section})}">
 <head>
@@ -10,9 +12,12 @@
           <div class="card-header">
             <h3 class="card-title">Controle de Estoque - Cadastrar</h3>
           </div>
+          <!-- Formulário pra salvar produto -->
           <form th:action="@{/estoque/salvar}" th:object="${produto}" method="post">
+            <!-- ID escondido, pra saber se é novo ou editado -->
             <input type="hidden" th:field="*{id}" />
             <div class="card-body">
+              <!-- Tipo do produto -->
               <div class="form-group">
                 <label>Tipo</label>
                 <div class="form-check">
@@ -28,23 +33,28 @@
                   <label class="form-check-label">Limpeza</label>
                 </div>
               </div>
+              <!-- Nome do produto -->
               <div class="form-group">
                 <label for="nome">Nome</label>
                 <input type="text" class="form-control" id="nome" th:field="*{nome}" placeholder="Nome do produto" required>
               </div>
+              <!-- Quantidade -->
               <div class="form-group">
                 <label for="quantidade">Quantidade</label>
                 <input type="number" class="form-control" id="quantidade" th:field="*{quantidade}" placeholder="0" required>
               </div>
+              <!-- Unidade de medida -->
               <div class="form-group">
                 <label for="unidade">Unidade</label>
                 <input type="text" class="form-control" id="unidade" th:field="*{unidade}" placeholder="kg, pacote, litro, etc." required>
               </div>
+              <!-- Data de vencimento -->
               <div class="form-group">
                 <label for="dataDeVencimento">Data de Vencimento</label>
                 <input type="date" class="form-control" id="dataDeVencimento" th:field="*{dataDeVencimento}">
               </div>
             </div>
+            <!-- Botões -->
             <div class="card-footer">
               <button type="submit" class="btn btn-primary">Salvar</button>
               <a th:href="@{/estoque}" class="btn btn-secondary">Cancelar</a>

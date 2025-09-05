@@ -1,4 +1,6 @@
+<!-- Página inicial (Dashboard) -->
 <!DOCTYPE html>
+<!-- Puxa o layout principal -->
 <html lang="pt-br" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{layout :: layout (~{::title/text()}, ~{::section})}">
 <head>
@@ -6,10 +8,13 @@
 </head>
 <body>
     <section>
+        <!-- Caixinhas com stats -->
         <div class="row">
             <div class="col-lg-3 col-6">
+            <!-- Caixa de Acolhidos -->
             <div class="small-box bg-info">
               <div class="inner">
+                <!-- Número fixo por enquanto, podia vir do controller -->
                 <h3>150</h3>
 
                 <p>Acolhidos</p>
