@@ -46,13 +46,13 @@
                             <td>
                                 <!-- Badge de status Ativo/Inativo -->
                                 <span th:if="${usuario.ativo}" class="badge bg-success">Ativo</span>
-                                <span th:unless="${usuario.ativo}" class="badge bg-secondary">Inativo</span>
+                                <span th:unless="${usuario.ativo}" class="badge bg-danger">Inativo</span>
                             </td>
                             <td>
                                 <!-- Botão de ativar/desativar -->
                                 <form th:action="@{/admin/usuarios/toggle/{id}(id=${usuario.id})}" method="post" style="display: inline-block;">
                                     <button type="submit"
-                                            th:classappend="${usuario.ativo ? 'btn-outline-secondary' : 'btn-outline-success'}"
+                                            th:classappend="${usuario.ativo ? 'btn-outline-success' : 'btn-outline-danger'}"
                                             class="btn btn-sm"
                                             style="width: 35px;"
                                             th:title="${usuario.ativo ? 'Desativar' : 'Ativar'}">
