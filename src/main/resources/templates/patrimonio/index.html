@@ -18,6 +18,18 @@
             </a>
         </div>
 
+        <!-- Formulário de busca pra filtrar os patrimonios -->
+        <form th:action="@{/patrimonio/pesquisar}" method="get" class="mb-4">
+            <div class="input-group">
+                <input type="text" name="filtro" class="form-control" placeholder="Buscar os patrimônios por nome..." th:value="${filtro}">
+                <div class="input-group-append">
+                    <button class="btn btn-outline-secondary" type="submit">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+        </form>
+
         <!-- Tabela de patrimonios -->
         <div class="card">
             <div class="card-header">
