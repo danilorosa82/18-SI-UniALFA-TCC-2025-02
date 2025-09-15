@@ -36,7 +36,7 @@
                 <h3 class="card-title">Lista de Patrimônios</h3>
             </div>
             <div class="card-body">
-                <!-- Se não tiver produto, mostra essa mensagem -->
+                <!-- Se não tiver nada no banc de dados, mostra essa mensagem -->
                 <div th:if="${#lists.isEmpty(patrimonios)}" class="alert alert-info">
                     Nenhum patrimônio cadastrado.
                 </div>
