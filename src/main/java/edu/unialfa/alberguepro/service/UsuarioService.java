@@ -3,6 +3,7 @@ package edu.unialfa.alberguepro.service;
 import edu.unialfa.alberguepro.model.Usuario;
 import edu.unialfa.alberguepro.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +37,16 @@ public class UsuarioService {
         usuarioRepository.save(usuario);
     }
 
-        public void excluir(Long id) {
+    public void excluir(Long id) {
+        String usernameLogado = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Usuario usuarioParaExcluir = usuarioRepository.findById(id)
+                .orElseThrow(() -> new IllegalStateException("Usuário não encontrado: " + id));
+
+        if (usuarioParaExcluir.getUsername().equals(usernameLogado)) {
+            throw new IllegalStateException("Não é possível excluir o usuário logado.");
+        }
+
         usuarioRepository.deleteById(id);
     }
 
