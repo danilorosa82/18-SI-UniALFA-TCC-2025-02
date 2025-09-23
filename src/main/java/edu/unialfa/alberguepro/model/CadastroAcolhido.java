@@ -45,7 +45,7 @@ public class CadastroAcolhido {
     private String telefoneFamiliar;
 
     @Enumerated(EnumType.STRING)
-    private Escolariade escolariade;
+    private Escolaridade escolaridade;
 
     @Enumerated(EnumType.STRING)
     private Renda renda;
@@ -62,7 +62,7 @@ public class CadastroAcolhido {
     private String qualMedicamento;
 
     @Enumerated(EnumType.STRING)
-    private DoencaSexualmentetramissivel doencaSexualmentetramissivel;
+    private DoencaSexualmentetransmissivel doencaSexualmentetransmissivel;
 
     @Enumerated(EnumType.STRING)
     private PossuiAlergia possuiAlergia;
@@ -123,12 +123,12 @@ public class CadastroAcolhido {
         this.filho = filho;
     }
 
-    public Escolariade getEscolariade() {
-        return escolariade;
+    public Escolaridade getEscolariade() {
+        return escolaridade;
     }
 
-    public void setEscolariade(Escolariade escolariade) {
-        this.escolariade = escolariade;
+    public void setEscolariade(Escolaridade escolaridade) {
+        this.escolaridade = escolaridade;
     }
 
     public Renda getRenda() {
@@ -163,12 +163,12 @@ public class CadastroAcolhido {
         this.medicamentoControlado = medicamentoControlado;
     }
 
-    public DoencaSexualmentetramissivel getDoencaSexualmentetramissivel() {
-        return doencaSexualmentetramissivel;
+    public DoencaSexualmentetransmissivel getDoencaSexualmentetransmissivel() {
+        return doencaSexualmentetransmissivel;
     }
 
-    public void setDoencaSexualmentetramissivel(DoencaSexualmentetramissivel doencaSexualmentetramissivel) {
-        this.doencaSexualmentetramissivel = doencaSexualmentetramissivel;
+    public void setDoencaSexualmentetransmissivel(DoencaSexualmentetransmissivel doencaSexualmentetramissivel) {
+        this.doencaSexualmentetransmissivel = doencaSexualmentetramissivel;
     }
 
     public PossuiAlergia getPossuiAlergia() {
@@ -246,7 +246,7 @@ public class CadastroAcolhido {
         Feminino
     }
 
-    public enum Escolariade {
+    public enum Escolaridade {
         Analfabeto,
         EnsinoFundamentalIncompleto,
         EnsinoFundamentalCompleto,
@@ -276,7 +276,7 @@ public class CadastroAcolhido {
         Nao
     }
 
-    public enum DoencaSexualmentetramissivel {
+    public enum DoencaSexualmentetransmissivel {
         Sim,
         Nao
     }

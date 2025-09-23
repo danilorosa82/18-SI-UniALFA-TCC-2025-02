@@ -29,7 +29,6 @@ public class CadastroAcolhidoController {
     @PostMapping("salvar")
     public String salvar(@ModelAttribute("acolhido") CadastroAcolhido acolhido, BindingResult result, Model model) {
 
-        // Validações
         if (acolhido.getNome() == null || acolhido.getNome().trim().isEmpty()) {
             result.rejectValue("nome", "campo.obrigatorio", "O nome é obrigatório.");
         }
@@ -38,54 +37,118 @@ public class CadastroAcolhidoController {
             result.rejectValue("dataNascimento", "campo.obrigatorio", "A data de nascimento é obrigatória.");
         } else if (acolhido.getDataNascimento().isAfter(LocalDate.now())) {
             result.rejectValue("dataNascimento", "data.invalida", "A data de nascimento não pode ser futura.");
+        } else {
+            int idade = LocalDate.now().getYear() - acolhido.getDataNascimento().getYear();
+            acolhido.setIdade(idade);
+        }
+
+        if (acolhido.getNaturalidade() == null || acolhido.getNaturalidade().trim().isEmpty()) {
+            result.rejectValue("naturalidade", "campo.obrigatorio", "A naturalidade é obrigatória.");
         }
 
         if (acolhido.getSexo() == null) {
             result.rejectValue("sexo", "campo.obrigatorio", "O sexo é obrigatório.");
         }
 
-        if (acolhido.getEstadoCivil() == null) {
-            result.rejectValue("estadoCivil", "campo.obrigatorio", "O estado civil é obrigatório.");
-        }
-
-        if (acolhido.getCpf() == null || acolhido.getCpf().trim().isEmpty()) {
-            result.rejectValue("cpf", "campo.obrigatorio", "O CPF é obrigatório.");
+        if (acolhido.getCor() == null || acolhido.getCor().trim().isEmpty()) {
+            result.rejectValue("cor", "campo.obrigatorio", "A cor é obrigatória.");
         }
 
         if (acolhido.getRg() == null || acolhido.getRg().trim().isEmpty()) {
             result.rejectValue("rg", "campo.obrigatorio", "O RG é obrigatório.");
+        } else if (!acolhido.getRg().matches("\\d{5,15}")) {
+            result.rejectValue("rg", "rg.invalido", "O RG informado é inválido.");
         }
 
-        if (acolhido.getEndereco() == null || acolhido.getEndereco().trim().isEmpty()) {
-            result.rejectValue("endereco", "campo.obrigatorio", "O endereço é obrigatório.");
+        if (acolhido.getCpf() == null || acolhido.getCpf().trim().isEmpty()) {
+            result.rejectValue("cpf", "campo.obrigatorio", "O CPF é obrigatório.");
+        } else if (!acolhido.getCpf().matches("\\d{11}")) {
+            result.rejectValue("cpf", "cpf.invalido", "O CPF informado é inválido.");
         }
 
-        if (acolhido.getTelefoneFamiliar() == null || acolhido.getTelefoneFamiliar().trim().isEmpty()) {
-            result.rejectValue("telefoneFamiliar", "campo.obrigatorio", "O telefone do familiar é obrigatório.");
+        if (acolhido.getCertidaoNascimento() == null || acolhido.getCertidaoNascimento().trim().isEmpty()) {
+            result.rejectValue("certidaoNascimento", "campo.obrigatorio", "A certidão de nascimento é obrigatória.");
         }
 
-        if (acolhido.getProfissao() == null || acolhido.getProfissao().trim().isEmpty()) {
-            result.rejectValue("profissao", "campo.obrigatorio", "A profissão é obrigatória.");
+        if (acolhido.getFiliacao() == null || acolhido.getFiliacao().trim().isEmpty()) {
+            result.rejectValue("filiacao", "campo.obrigatorio", "A filiação é obrigatória.");
+        }
+
+        if (acolhido.getEstadoCivil() == null) {
+            result.rejectValue("estadoCivil", "campo.obrigatorio", "O estado civil é obrigatório.");
+        } else if ((acolhido.getEstadoCivil() == CadastroAcolhido.EstadoCivil.Casado
+                || acolhido.getEstadoCivil() == CadastroAcolhido.EstadoCivil.UniaoEstavel)
+                && (acolhido.getNomeConjuge() == null || acolhido.getNomeConjuge().trim().isEmpty())) {
+            result.rejectValue("nomeConjuge", "campo.obrigatorio", "O nome do cônjuge é obrigatório.");
         }
 
         if (acolhido.getFilho() == CadastroAcolhido.Filho.Sim && (acolhido.getQuantidadeFilhos() == null || acolhido.getQuantidadeFilhos() <= 0)) {
             result.rejectValue("quantidadeFilhos", "campo.obrigatorio", "Informe a quantidade de filhos.");
         }
 
+        if (acolhido.getEndereco() == null || acolhido.getEndereco().trim().isEmpty()) {
+            result.rejectValue("endereco", "campo.obrigatorio", "O endereço é obrigatório.");
+        }
+
+        if (acolhido.getEscolaridade() == null) {
+            result.rejectValue("escolaridade", "campo.obrigatorio", "A escolaridade é obrigatória.");
+        }
+
+        if (acolhido.getRenda() == null) {
+            result.rejectValue("renda", "campo.obrigatorio", "Informe se possui renda.");
+        }
+
         if (acolhido.getBeneficioSocial() == CadastroAcolhido.BeneficioSocial.Sim && (acolhido.getQualBeneficio() == null || acolhido.getQualBeneficio().trim().isEmpty())) {
             result.rejectValue("qualBeneficio", "campo.obrigatorio", "Informe qual benefício recebe.");
         }
 
-        if (acolhido.getMedicamentoControlado() == CadastroAcolhido.MedicamentoControlado.Sim && (acolhido.getQualMedicamento() == null || acolhido.getQualMedicamento().trim().isEmpty())) {
-            result.rejectValue("qualMedicamento", "campo.obrigatorio", "Informe qual medicamento controlado utiliza.");
+        if (acolhido.getEstadoSaude() == null) {
+            result.rejectValue("estadoSaude", "campo.obrigatorio", "O estado de saúde é obrigatório.");
         }
 
         if (acolhido.getPossuiAlergia() == CadastroAcolhido.PossuiAlergia.Sim && (acolhido.getQualAlergia() == null || acolhido.getQualAlergia().trim().isEmpty())) {
             result.rejectValue("qualAlergia", "campo.obrigatorio", "Informe a alergia.");
         }
 
+        if (acolhido.getFumante() == null) {
+            result.rejectValue("fumante", "campo.obrigatorio", "Informe se é fumante.");
+        }
+
+        if (acolhido.getBebidaAlcoolica() == null) {
+            result.rejectValue("bebidaAlcoolica", "campo.obrigatorio", "Informe se consome bebida alcoólica.");
+        }
+
         if (acolhido.getUsaDrogas() == CadastroAcolhido.UsaDrogas.Sim && (acolhido.getQualDroga() == null || acolhido.getQualDroga().trim().isEmpty())) {
             result.rejectValue("qualDroga", "campo.obrigatorio", "Informe qual droga utiliza.");
+        }
+
+        if (acolhido.getSituacaoRua() == CadastroAcolhido.SituacaoRua.Sim && (acolhido.getTempoRua() == null || acolhido.getTempoRua().trim().isEmpty())) {
+            result.rejectValue("tempoRua", "campo.obrigatorio", "Informe o tempo de rua.");
+        }
+
+        if (acolhido.getVinculoFamiliar() == CadastroAcolhido.VinculoFamiliar.Sim) {
+            if (acolhido.getCidadeVinculoFamiliar() == null || acolhido.getCidadeVinculoFamiliar().trim().isEmpty()) {
+                result.rejectValue("cidadeVinculoFamiliar", "campo.obrigatorio", "Informe a cidade do vínculo familiar.");
+            }
+            if (acolhido.getVinculoFamiliarQuem() == null || acolhido.getVinculoFamiliarQuem().trim().isEmpty()) {
+                result.rejectValue("vinculoFamiliarQuem", "campo.obrigatorio", "Informe com quem é o vínculo familiar.");
+            }
+        }
+
+        if (acolhido.getVezesAcolhido() == null || acolhido.getVezesAcolhido().trim().isEmpty()) {
+            result.rejectValue("vezesAcolhido", "campo.obrigatorio", "O campo vezes acolhido é obrigatório.");
+        }
+
+        if (acolhido.getUltimaCidadeQueEsteve() == null || acolhido.getUltimaCidadeQueEsteve().trim().isEmpty()) {
+            result.rejectValue("ultimaCidadeQueEsteve", "campo.obrigatorio", "Informe a última cidade que esteve.");
+        }
+
+        if (acolhido.getTempoUltimaCidade() == null || acolhido.getTempoUltimaCidade().trim().isEmpty()) {
+            result.rejectValue("tempoUltimaCidade", "campo.obrigatorio", "Informe o tempo na última cidade.");
+        }
+
+        if (acolhido.getObjetivoAcolhimento() == null || acolhido.getObjetivoAcolhimento().trim().isEmpty()) {
+            result.rejectValue("objetivoAcolhimento", "campo.obrigatorio", "Informe o objetivo do acolhimento.");
         }
 
         if (acolhido.getDataIngresso() == null) {
@@ -96,13 +159,41 @@ public class CadastroAcolhidoController {
             result.rejectValue("dataSaida", "data.invalida", "A data de saída não pode ser anterior à data de ingresso.");
         }
 
-        // Se houver erro, recarregar listas e voltar para o formulário
+        if (acolhido.getServicoAcolhimento() == CadastroAcolhido.ServicoAcolhimento.Sim) {
+            if (acolhido.getVezesAcolhido() == null || acolhido.getVezesAcolhido().trim().isEmpty()) {
+                result.rejectValue("vezesAcolhido", "campo.obrigatorio", "Informe quantas vezes já foi acolhido.");
+            }
+        }
+
         if (result.hasErrors()) {
             carregarListas(model);
             return "cadastroAcolhido/form";
         }
 
-        // Salvar
+        if (acolhido.getFilho() == CadastroAcolhido.Filho.Nao) {
+            acolhido.setQuantidadeFilhos(null);
+        }
+        if (acolhido.getMedicamentoControlado() == CadastroAcolhido.MedicamentoControlado.Nao) {
+            acolhido.setQualMedicamento(null);
+        }
+        if (acolhido.getUsaDrogas() == CadastroAcolhido.UsaDrogas.Nao) {
+            acolhido.setQualDroga(null);
+        }
+        if (acolhido.getPossuiAlergia() == CadastroAcolhido.PossuiAlergia.Nao) {
+            acolhido.setQualAlergia(null);
+        }
+        if (acolhido.getBeneficioSocial() == CadastroAcolhido.BeneficioSocial.Nao) {
+            acolhido.setQualBeneficio(null);
+        }
+        if (acolhido.getSituacaoRua() == CadastroAcolhido.SituacaoRua.Nao) {
+            acolhido.setTempoRua(null);
+        }
+        if (acolhido.getVinculoFamiliar() == CadastroAcolhido.VinculoFamiliar.Nao) {
+            acolhido.setCidadeVinculoFamiliar(null);
+            acolhido.setVinculoFamiliarQuem(null);
+        }
+
+
         service.salvar(acolhido);
         return "redirect:/cadastroAcolhido/listar";
     }
@@ -131,10 +222,19 @@ public class CadastroAcolhidoController {
     private void carregarListas(Model model) {
         model.addAttribute("sexos", CadastroAcolhido.Sexo.values());
         model.addAttribute("estadosCivil", CadastroAcolhido.EstadoCivil.values());
-        model.addAttribute("filhos", CadastroAcolhido.Filho.values());
-        model.addAttribute("beneficios", CadastroAcolhido.BeneficioSocial.values());
-        model.addAttribute("medicamentos", CadastroAcolhido.MedicamentoControlado.values());
-        model.addAttribute("alergias", CadastroAcolhido.PossuiAlergia.values());
-        model.addAttribute("drogas", CadastroAcolhido.UsaDrogas.values());
+        model.addAttribute("escolaridade", CadastroAcolhido.Escolaridade.values());
+        model.addAttribute("renda", CadastroAcolhido.Renda.values());
+        model.addAttribute("beneficioSocial", CadastroAcolhido.BeneficioSocial.values());
+        model.addAttribute("estadoSaude", CadastroAcolhido.EstadoSaude.values());
+        model.addAttribute("medicamentoControlado", CadastroAcolhido.MedicamentoControlado.values());
+        model.addAttribute("doencaSexualmentetransmissivel", CadastroAcolhido.DoencaSexualmentetransmissivel.values());
+        model.addAttribute("possuiAlergia", CadastroAcolhido.PossuiAlergia.values());
+        model.addAttribute("fumante", CadastroAcolhido.Fumante.values());
+        model.addAttribute("bebidaAlcoolica", CadastroAcolhido.BebidaAlcoolica.values());
+        model.addAttribute("usaDrogas", CadastroAcolhido.UsaDrogas.values());
+        model.addAttribute("situacaoRua", CadastroAcolhido.SituacaoRua.values());
+        model.addAttribute("vinculoFamiliar", CadastroAcolhido.VinculoFamiliar.values());
+        model.addAttribute("servicoAcolhimento", CadastroAcolhido.ServicoAcolhimento.values());
     }
+
 }

@@ -85,12 +85,12 @@
 
                 <div class="form-group">
                     <label for="estadoCivil">Estado Civil</label>
-                    <select class="form-control" id="estadoCivil" th:field="*{estadoCivil}">
-                        <option th:value="Solteiro">Solteiro</option>
-                        <option th:value="Casado">Casado</option>
-                        <option th:value="Divorciado">Divorciado</option>
-                        <option th:value="UniaoEstavel">União Estável</option>
-                        <option th:value="Viuvo">Viúvo</option>
+                    <select id="estadoCivil" class="form-control" th:field="*{estadoCivil}">
+                        <option value="">Selecione...</option>
+                        <option th:each="ec : ${estadosCivil}"
+                                th:value="${ec}"
+                                th:text="${ec}">
+                        </option>
                     </select>
                     <div th:if="${#fields.hasErrors('estadoCivil')}" th:errors="*{estadoCivil}" class="text-danger"></div>
                 </div>
@@ -98,6 +98,7 @@
                 <div class="form-group">
                     <label for="nomeConjuge">Nome do Cônjuge</label>
                     <input type="text" class="form-control" id="nomeConjuge" th:field="*{nomeConjuge}">
+                    <div th:if="${#fields.hasErrors('nomeConjuge')}" th:errors="*{nomeConjuge}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
@@ -110,11 +111,13 @@
                         <input class="form-check-input" type="radio" th:field="*{filho}" value="Nao">
                         <label class="form-check-label">Não</label>
                     </div>
+                    <div th:if="${#fields.hasErrors('filho')}" th:errors="*{filho}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="quantidadeFilhos">Quantidade de Filhos</label>
                     <input type="number" class="form-control" id="quantidadeFilhos" th:field="*{quantidadeFilhos}">
+                    <div th:if="${#fields.hasErrors('quantidadeFilhos')}" th:errors="*{quantidadeFilhos}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
@@ -129,167 +132,226 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="escolariade">Escolaridade</label>
-                    <select class="form-control" id="escolariade" th:field="*{escolariade}">
-                        <option th:value="Analfabeto">Analfabeto</option>
-                        <option th:value="EnsinoFundamentalIncompleto">Ensino Fundamental Incompleto</option>
-                        <option th:value="EnsinoFundamentalCompleto">Ensino Fundamental Completo</option>
-                        <option th:value="EnsinoMedioIncompleto">Ensino Médio Incompleto</option>
-                        <option th:value="EnsinoMedioCompleto">Ensino Médio Completo</option>
-                        <option th:value="SuperiorIncompleto">Superior Incompleto</option>
-                        <option th:value="SuperiorCompleto">Superior Completo</option>
+                    <label for="escolaridade">Escolaridade</label>
+                    <select id="escolaridade" class="form-control" th:field="*{escolaridade}">
+                        <option value="">Selecione...</option>
+                        <option th:each="es : ${escolaridade}"
+                                th:value="${es}"
+                                th:text="${es}">
+                        </option>
                     </select>
+                    <div th:if="${#fields.hasErrors('escolaridade')}" th:errors="*{escolaridade}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="renda">Possui Renda?</label>
-                    <select class="form-control" id="renda" th:field="*{renda}">
-                        <option th:value="Sim">Sim</option>
-                        <option th:value="Nao">Não</option>
+                    <select id="renda" class="form-control" th:field="*{renda}">
+                        <option value="">Selecione...</option>
+                        <option th:each="re : ${renda}"
+                                th:value="${re}"
+                                th:text="${re}">
+                        </option>
                     </select>
+                    <div th:if="${#fields.hasErrors('renda')}" th:errors="*{renda}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="beneficioSocial">Recebe Benefício Social?</label>
                     <select class="form-control" id="beneficioSocial" th:field="*{beneficioSocial}">
-                        <option th:value="Sim">Sim</option>
-                        <option th:value="Nao">Não</option>
+                        <option value="">Selecione...</option>
+                        <option th:each="be : ${beneficioSocial}"
+                                th:value="${be}"
+                                th:text="${be}">
+                        </option>
                     </select>
+                    <div th:if="${#fields.hasErrors('beneficioSocial')}" th:errors="*{beneficioSocial}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="qualBeneficio">Qual Benefício</label>
                     <input type="text" class="form-control" id="qualBeneficio" th:field="*{qualBeneficio}">
+                    <div th:if="${#fields.hasErrors('qualBeneficio')}" th:errors="*{qualBeneficio}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="estadoSaude">Estado de Saúde</label>
                     <select class="form-control" id="estadoSaude" th:field="*{estadoSaude}">
-                        <option th:value="Bom">Bom</option>
-                        <option th:value="Regular">Regular</option>
+                        <option value="">Selecione...</option>
+                        <option th:each="es : ${estadoSaude}"
+                                th:value="${es}"
+                                th:text="${es}">
+                        </option>
                     </select>
+                    <div th:if="${#fields.hasErrors('estadoSaude')}" th:errors="*{estadoSaude}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="medicamentoControlado">Usa Medicamento Controlado?</label>
                     <select class="form-control" id="medicamentoControlado" th:field="*{medicamentoControlado}">
-                        <option th:value="Sim">Sim</option>
-                        <option th:value="Nao">Não</option>
-                    </select>
+                        <option value="">Selecione...</option>
+                        <option th:each="mc : ${medicamentoControlado}"
+                                th:value="${mc}"
+                                th:text="${mc}">
+                        </option>
+                        </select>
+                    <div th:if="${#fields.hasErrors('medicamentoControlado')}" th:errors="*{medicamentoControlado}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="qualMedicamento">Qual Medicamento</label>
                     <input type="text" class="form-control" id="qualMedicamento" th:field="*{qualMedicamento}">
+                    <div th:if="${#fields.hasErrors('qualMedicamento')}" th:errors="*{qualMedicamento}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="doencaSexualmentetramissivel">Doença Sexualmente Transmissível?</label>
-                    <select class="form-control" id="doencaSexualmentetramissivel" th:field="*{doencaSexualmentetramissivel}">
-                        <option th:value="Sim">Sim</option>
-                        <option th:value="Nao">Não</option>
+                    <label for="doencaSexualmentetransmissivel">Doença Sexualmente Transmissível?</label>
+                    <select class="form-control" id="doencaSexualmentetransmissivel" th:field="*{doencaSexualmentetransmissivel}">
+                        <option value="">Selecione...</option>
+                        <option th:each="do : ${doencaSexualmentetransmissivel}"
+                                th:value="${do}"
+                                th:text="${do}">
+                        </option>
                     </select>
+                    <div th:if="${#fields.hasErrors('doencaSexualmentetransmissivel')}" th:errors="*{doencaSexualmentetransmissivel}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="possuiAlergia">Possui Alergia?</label>
                     <select class="form-control" id="possuiAlergia" th:field="*{possuiAlergia}">
-                        <option th:value="Sim">Sim</option>
-                        <option th:value="Nao">Não</option>
+                        <option value="">Selecione...</option>
+                        <option th:each="pa : ${possuiAlergia}"
+                                th:value="${pa}"
+                                th:text="${pa}">
+                        </option>
                     </select>
+                    <div th:if="${#fields.hasErrors('possuiAlergia')}" th:errors="*{possuiAlergia}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="qualAlergia">Qual Alergia</label>
                     <input type="text" class="form-control" id="qualAlergia" th:field="*{qualAlergia}">
+                    <div th:if="${#fields.hasErrors('qualAlergia')}" th:errors="*{qualAlergia}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="fumante">Fumante?</label>
                     <select class="form-control" id="fumante" th:field="*{fumante}">
-                        <option th:value="Sim">Sim</option>
-                        <option th:value="Nao">Não</option>
+                        <option value="">Selecione...</option>
+                        <option th:each="fu : ${fumante}"
+                                th:value="${fu}"
+                                th:text="${fu}">
+                        </option>
                     </select>
+                    <div th:if="${#fields.hasErrors('fumante')}" th:errors="*{fumante}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="bebidaAlcoolica">Usa Bebida Alcoólica?</label>
                     <select class="form-control" id="bebidaAlcoolica" th:field="*{bebidaAlcoolica}">
-                        <option th:value="Sim">Sim</option>
-                        <option th:value="Nao">Não</option>
+                        <option value="">Selecione...</option>
+                        <option th:each="be : ${bebidaAlcoolica}"
+                                th:value="${be}"
+                                th:text="${be}">
+                        </option>
                     </select>
+                    <div th:if="${#fields.hasErrors('bebidaAlcoolica')}" th:errors="*{bebidaAlcoolica}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="usaDrogas">Usa Drogas?</label>
                     <select class="form-control" id="usaDrogas" th:field="*{usaDrogas}">
-                        <option th:value="Sim">Sim</option>
-                        <option th:value="Nao">Não</option>
+                        <option value="">Selecione...</option>
+                        <option th:each="dr : ${usaDrogas}"
+                                th:value="${dr}"
+                                th:text="${dr}">
+                        </option>
                     </select>
+                    </select>
+                    <div th:if="${#fields.hasErrors('usaDrogas')}" th:errors="*{usaDrogas}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="qualDroga">Qual Droga</label>
                     <input type="text" class="form-control" id="qualDroga" th:field="*{qualDroga}">
+                    <div th:if="${#fields.hasErrors('qualDroga')}" th:errors="*{qualDroga}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="situacaoRua">Está em Situação de Rua?</label>
                     <select class="form-control" id="situacaoRua" th:field="*{situacaoRua}">
-                        <option th:value="Sim">Sim</option>
-                        <option th:value="Nao">Não</option>
+                        <option value="">Selecione...</option>
+                        <option th:each="sr : ${situacaoRua}"
+                                th:value="${sr}"
+                                th:text="${sr}">
+                        </option>
                     </select>
+                    <div th:if="${#fields.hasErrors('situacaoRua')}" th:errors="*{situacaoRua}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="tempoRua">Tempo de Rua</label>
                     <input type="text" class="form-control" id="tempoRua" th:field="*{tempoRua}">
+                    <div th:if="${#fields.hasErrors('tempoRua')}" th:errors="*{tempoRua}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="vinculoFamiliar">Possui Vínculo Familiar?</label>
                     <select class="form-control" id="vinculoFamiliar" th:field="*{vinculoFamiliar}">
-                        <option th:value="Sim">Sim</option>
-                        <option th:value="Nao">Não</option>
+                        <option value="">Selecione...</option>
+                        <option th:each="vf : ${vinculoFamiliar}"
+                                th:value="${vf}"
+                                th:text="${vf}">
+                        </option>
                     </select>
+                    <div th:if="${#fields.hasErrors('vinculoFamiliar')}" th:errors="*{vinculoFamiliar}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="vinculoFamiliarQuem">Quem?</label>
                     <input type="text" class="form-control" id="vinculoFamiliarQuem" th:field="*{vinculoFamiliarQuem}">
+                    <div th:if="${#fields.hasErrors('vinculoFamiliarQuem')}" th:errors="*{vinculoFamiliarQuem}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="cidadeVinculoFamiliar">Cidade do Vínculo Familiar</label>
                     <input type="text" class="form-control" id="cidadeVinculoFamiliar" th:field="*{cidadeVinculoFamiliar}">
+                    <div th:if="${#fields.hasErrors('cidadeVinculoFamiliar')}" th:errors="*{cidadeVinculoFamiliar}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="servicoAcolhimento">Já foi acolhido antes?</label>
                     <select class="form-control" id="servicoAcolhimento" th:field="*{servicoAcolhimento}">
-                        <option th:value="Sim">Sim</option>
-                        <option th:value="Nao">Não</option>
+                        <option value="">Selecione...</option>
+                        <option th:each="sa : ${servicoAcolhimento}"
+                                th:value="${sa}"
+                                th:text="${sa}">
+                        </option>
                     </select>
+                    <div th:if="${#fields.hasErrors('servicoAcolhimento')}" th:errors="*{servicoAcolhimento}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="vezesAcolhido">Quantas vezes?</label>
                     <input type="text" class="form-control" id="vezesAcolhido" th:field="*{vezesAcolhido}">
+                    <div th:if="${#fields.hasErrors('vezesAcolhido')}" th:errors="*{vezesAcolhido}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="ultimaCidadeQueEsteve">Última Cidade que Esteve</label>
                     <input type="text" class="form-control" id="ultimaCidadeQueEsteve" th:field="*{ultimaCidadeQueEsteve}">
+                    <div th:if="${#fields.hasErrors('ultimaCidadeQueEsteve')}" th:errors="*{ultimaCidadeQueEsteve}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="tempoUltimaCidade">Tempo na Última Cidade</label>
                     <input type="text" class="form-control" id="tempoUltimaCidade" th:field="*{tempoUltimaCidade}">
+                    <div th:if="${#fields.hasErrors('tempoUltimaCidade')}" th:errors="*{tempoUltimaCidade}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="objetivoAcolhimento">Objetivo do Acolhimento</label>
                     <input type="text" class="form-control" id="objetivoAcolhimento" th:field="*{objetivoAcolhimento}">
+                    <div th:if="${#fields.hasErrors('objetivoAcolhimento')}" th:errors="*{objetivoAcolhimento}" class="text-danger"></div>
                 </div>
 
                 <div class="form-group">
