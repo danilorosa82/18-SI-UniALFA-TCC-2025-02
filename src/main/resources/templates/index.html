@@ -7,25 +7,161 @@
     <title>Dashboard - AlberguePro</title>
 </head>
 <body>
-    <section>
-        <!-- Caixinhas com stats -->
-        <div class="row">
-            <div class="col-lg-3 col-6">
-            <!-- Caixa de Acolhidos -->
+<section>
+    <!-- Linha de Caixas de Informação -->
+    <div class="row">
+        <!-- Acolhidos Ativos -->
+        <div class="col-lg-3 col-6">
             <div class="small-box bg-info">
-              <div class="inner">
-                <!-- Número fixo por enquanto, podia vir do controller -->
-                <h3>150</h3>
-
-                <p>Acolhidos</p>
-              </div>
-              <div class="icon">
-                <i class="ion ion-bag"></i>
-              </div>
-              <a href="#" class="small-box-footer">Mais info <i class="fas fa-arrow-circle-right"></i></a>
+                <div class="inner">
+                    <h3 th:text="${dashboard.totalAcolhidos}">0</h3>
+                    <p>Acolhidos Ativos</p>
+                </div>
+                <div class="icon"><i class="fas fa-users"></i></div>
             </div>
-          </div>
         </div>
-    </section>
+
+        <!-- Leitos -->
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-success">
+                <div class="inner">
+                    <h3 th:text="${dashboard.leitosLivres} + ' / ' + ${dashboard.totalLeitos}">0 / 0</h3>
+                    <p>Leitos Livres</p>
+                </div>
+                <div class="icon"><i class="fas fa-bed"></i></div>
+            </div>
+        </div>
+
+        <!-- Quartos -->
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-warning">
+                <div class="inner">
+                    <h3 th:text="${dashboard.quartosLivres} + ' / ' + ${dashboard.totalQuartos}">0 / 0</h3>
+                    <p>Quartos Livres</p>
+                </div>
+                <div class="icon"><i class="fas fa-door-open"></i></div>
+            </div>
+        </div>
+
+        <!-- Total de Usuários -->
+        <div class="col-lg-3 col-6">
+            <div class="small-box bg-danger">
+                <div class="inner">
+                    <h3 th:text="${dashboard.totalUsuarios}">0</h3>
+                    <p>Usuários do Sistema</p>
+                </div>
+                <div class="icon"><i class="fas fa-user-shield"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Linha dos Gráficos -->
+    <div class="row">
+        <!-- Gráfico de Patrimônio -->
+        <div class="col-md-6">
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Patrimônio por Status</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="patrimonioChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Estoque Baixo -->
+        <div class="col-md-6">
+            <div class="card card-danger">
+                <div class="card-header">
+                    <h3 class="card-title">Top 5 Produtos com Estoque Baixo</h3>
+                </div>
+                <div class="card-body">
+                    <canvas id="estoqueChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<!-- Script para inicializar os gráficos -->
+<script th:inline="javascript">
+    /*<![CDATA[*/
+
+    // Aguarda o documento carregar
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // --- DADOS DO BACKEND --- //
+        const patrimonioData = /*[[${dashboard.patrimonioPorStatus}]]*/ {};
+        const estoqueData = /*[[${dashboard.estoqueBaixo}]]*/ {};
+
+        // --- GRÁFICO DE PATRIMÔNIO (PIZZA) --- //
+        const patrimonioCtx = document.getElementById('patrimonioChart').getContext('2d');
+        if (Object.keys(patrimonioData).length > 0) {
+            new Chart(patrimonioCtx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(patrimonioData),
+                    datasets: [{
+                        label: 'Status do Patrimônio',
+                        data: Object.values(patrimonioData),
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                        ],
+                        borderColor: 'rgba(255, 255, 255, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true
+                }
+            });
+        } else {
+            patrimonioCtx.font = "16px Arial";
+            patrimonioCtx.textAlign = "center";
+            patrimonioCtx.fillText("Nenhum dado de patrimônio para exibir", patrimonioCtx.canvas.width / 2, patrimonioCtx.canvas.height / 2);
+        }
+
+
+        // --- GRÁFICO DE ESTOQUE (BARRAS) --- //
+        const estoqueCtx = document.getElementById('estoqueChart').getContext('2d');
+        if (Object.keys(estoqueData).length > 0) {
+            new Chart(estoqueCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(estoqueData),
+                    datasets: [{
+                        label: 'Quantidade em Estoque',
+                        data: Object.values(estoqueData),
+                        backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                        borderColor: 'rgba(220, 53, 69, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        } else {
+            estoqueCtx.font = "16px Arial";
+            estoqueCtx.textAlign = "center";
+            estoqueCtx.fillText("Nenhum produto com estoque baixo", estoqueCtx.canvas.width / 2, estoqueCtx.canvas.height / 2);
+        }
+    });
+
+    /*]]>*/
+</script>
+
 </body>
 </html>

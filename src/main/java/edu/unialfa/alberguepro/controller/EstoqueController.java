@@ -115,6 +115,7 @@ public class EstoqueController {
             return "estoque/form";
         }
         produto.setUnidade(unidadeOptional.get());
+        System.out.println("Data de Vencimento: " + produto.getDataDeVencimento());
         produtoRepository.save(produto);
         return "redirect:/estoque";
     }
