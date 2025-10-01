@@ -1,7 +1,7 @@
 <!-- Molde principal das páginas -->
 <!DOCTYPE html>
 <!-- Define o layout e os parâmetros que ele recebe (título e conteúdo) -->
-<html lang="pt-br" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:fragment="layout (title, content)">
+<html lang="pt-br" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:fragment="layout (title, content, script)">
 <head>
     <meta charset="UTF-8">
     <!-- Título da aba -->
@@ -39,7 +39,7 @@
         <a th:href="@{/}" class="brand-link">
             <span class="brand-text font-weight-light">AlberguePro</span>
         </a>
-        
+
         <div class="sidebar">
             <nav class="mt-2">
                 <!-- Lista de menus -->
@@ -202,6 +202,7 @@
 <script th:src="@{/webjars/AdminLTE/3.2.0/plugins/jquery/jquery.min.js}"></script>
 <script th:src="@{/webjars/AdminLTE/3.2.0/plugins/bootstrap/js/bootstrap.bundle.min.js}"></script>
 <script th:src="@{/webjars/AdminLTE/3.2.0/dist/js/adminlte.min.js}"></script>
+<th:block th:replace="${script}"></th:block>
 <!-- ChartJS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
