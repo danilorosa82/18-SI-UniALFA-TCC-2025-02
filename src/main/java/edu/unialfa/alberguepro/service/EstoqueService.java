@@ -25,8 +25,6 @@ public class EstoqueService {
 
         int novaQuantidade = produto.getQuantidade() - quantidadeParaBaixa;
         if (novaQuantidade < 0) {
-            // Em um sistema real, poderíamos lançar uma exceção mais específica aqui
-            // para dar um feedback melhor ao usuário.
             throw new IllegalStateException("Estoque insuficiente para o produto: " + produto.getNome());
         }
 

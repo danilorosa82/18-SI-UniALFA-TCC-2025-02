@@ -2,7 +2,7 @@ package edu.unialfa.alberguepro.controller;
 
 import edu.unialfa.alberguepro.dto.DashboardDTO;
 import edu.unialfa.alberguepro.model.ControlePatrimonio;
-import edu.unialfa.alberguepro.model.Leito;
+import edu.unialfa.alberguepro.model.Vaga;
 import edu.unialfa.alberguepro.model.Produto;
 import edu.unialfa.alberguepro.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +23,7 @@ public class HomeController {
     private CadastroAcolhidoRepository cadastroAcolhidoRepository;
 
     @Autowired
-    private LeitoRepository leitoRepository;
+    private VagaRepository vagaRepository;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -37,23 +37,23 @@ public class HomeController {
     @GetMapping("/")
     public String index(Model model,
                         @RequestParam(required = false, defaultValue = "0") int pageEstoque,
-                        @RequestParam(required = false, defaultValue = "0") int pageLeitos) {
+                        @RequestParam(required = false, defaultValue = "0") int pageVagas) {
         DashboardDTO dashboardDTO = new DashboardDTO();
 
         // Acolhidos
         dashboardDTO.setTotalAcolhidos(cadastroAcolhidoRepository.countByDataSaidaIsNull());
 
-        // Leitos
-        long leitosOcupados = leitoRepository.countByAcolhidoIsNotNull();
-        long totalLeitos = (long) Leito.Quarto.values().length * Leito.NumeroLeito.values().length;
-        dashboardDTO.setLeitosOcupados(leitosOcupados);
-        dashboardDTO.setLeitosLivres(totalLeitos - leitosOcupados);
-        dashboardDTO.setTotalLeitos(totalLeitos);
+        // Vagas
+        long vagasOcupadas = vagaRepository.countByAcolhidoIsNotNull();
+        long totalVagas = vagaRepository.count();
+        dashboardDTO.setVagasOcupadas(vagasOcupadas);
+        dashboardDTO.setVagasLivres(totalVagas - vagasOcupadas);
+        dashboardDTO.setTotalVagas(totalVagas);
 
         // Quartos
-        long totalQuartos = Leito.Quarto.values().length;
-        long camasPorQuarto = Leito.NumeroLeito.values().length;
-        List<Object[]> occupiedBedsByRoom = leitoRepository.countOccupiedBedsByRoom();
+        long totalQuartos = Vaga.Quarto.values().length;
+        long camasPorQuarto = Vaga.NumeroLeito.values().length;
+        List<Object[]> occupiedBedsByRoom = vagaRepository.countOccupiedBedsByRoom();
 
         long quartosCheios = occupiedBedsByRoom.stream()
             .filter(result -> (Long) result[1] >= camasPorQuarto)
@@ -87,12 +87,12 @@ public class HomeController {
         pagedListEstoque.setPage(pageEstoque);
         model.addAttribute("produtosBaixoEstoque", pagedListEstoque);
 
-        // Paginação para Leitos
-        List<Leito> leitos = leitoRepository.findAll();
-        PagedListHolder<Leito> pagedListLeitos = new PagedListHolder<>(leitos);
-        pagedListLeitos.setPageSize(5);
-        pagedListLeitos.setPage(pageLeitos);
-        model.addAttribute("leitos", pagedListLeitos);
+        // Paginação para Vagas
+        List<Vaga> vagas = vagaRepository.findAll();
+        PagedListHolder<Vaga> pagedListVagas = new PagedListHolder<>(vagas);
+        pagedListVagas.setPageSize(5);
+        pagedListVagas.setPage(pageVagas);
+        model.addAttribute("vagas", pagedListVagas);
 
 
         return "index";
