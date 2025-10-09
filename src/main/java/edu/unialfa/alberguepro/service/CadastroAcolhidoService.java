@@ -13,7 +13,6 @@ public class CadastroAcolhidoService {
     @Autowired
     private CadastroAcolhidoRepository repository;
 
-
     public void salvar(CadastroAcolhido cadastroAcolhido) {
         repository.save(cadastroAcolhido);
     }
@@ -23,7 +22,7 @@ public class CadastroAcolhidoService {
     }
 
     public CadastroAcolhido buscarPorId(Long id) {
-        return repository.findById(id).get();
+        return repository.findById(id).orElseThrow(() -> new RuntimeException("Acolhido não encontrado: " + id));
     }
 
     public void deletarPorId(Long id) {

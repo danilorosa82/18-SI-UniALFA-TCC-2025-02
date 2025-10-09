@@ -344,7 +344,7 @@
                         <div th:if="${#fields.hasErrors('situacaoRua')}" th:errors="*{situacaoRua}" class="text-danger"></div>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" id="divTempoRua" style="display:none;">
                         <label for="tempoRua">Tempo de Rua</label>
                         <input type="text" class="form-control" id="tempoRua" th:field="*{tempoRua}">
                         <div th:if="${#fields.hasErrors('tempoRua')}" th:errors="*{tempoRua}" class="text-danger"></div>
@@ -362,13 +362,13 @@
                         <div th:if="${#fields.hasErrors('vinculoFamiliar')}" th:errors="*{vinculoFamiliar}" class="text-danger"></div>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" id="divVinculoFamiliarQuem" style="display:none;">
                         <label for="vinculoFamiliarQuem">Quem?</label>
                         <input type="text" class="form-control" id="vinculoFamiliarQuem" th:field="*{vinculoFamiliarQuem}">
                         <div th:if="${#fields.hasErrors('vinculoFamiliarQuem')}" th:errors="*{vinculoFamiliarQuem}" class="text-danger"></div>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" id="divCidadeVinculoFamiliar" style="display:none;">
                         <label for="cidadeVinculoFamiliar">Cidade do Vínculo Familiar</label>
                         <input type="text" class="form-control" id="cidadeVinculoFamiliar" th:field="*{cidadeVinculoFamiliar}">
                         <div th:if="${#fields.hasErrors('cidadeVinculoFamiliar')}" th:errors="*{cidadeVinculoFamiliar}" class="text-danger"></div>
@@ -386,7 +386,7 @@
                         <div th:if="${#fields.hasErrors('servicoAcolhimento')}" th:errors="*{servicoAcolhimento}" class="text-danger"></div>
                     </div>
 
-                    <div class="form-group">
+                    <div class="form-group" id="divVezesAcolhido" style="display:none;">
                         <label for="vezesAcolhido">Quantas vezes?</label>
                         <input type="text" class="form-control" id="vezesAcolhido" th:field="*{vezesAcolhido}">
                         <div th:if="${#fields.hasErrors('vezesAcolhido')}" th:errors="*{vezesAcolhido}" class="text-danger"></div>
@@ -538,17 +538,51 @@
         divQualAlergia.style.display = 'none';
         document.getElementById('qualAlergia').value = '';
     }
+
+    const situacaoRua = document.getElementById('situacaoRua');
+    const divTempoRua = document.getElementById('divTempoRua');
+    if (situacaoRua && situacaoRua.value === 'Sim') {
+        divTempoRua.style.display = 'block';
+    } else {
+        divTempoRua.style.display = 'none';
+        document.getElementById('tempoRua').value = '';
+    }
+
+    const vinculoFamiliar = document.getElementById('vinculoFamiliar');
+    const divVinculoFamiliarQuem = document.getElementById('divVinculoFamiliarQuem');
+    const divCidadeVinculoFamiliar = document.getElementById('divCidadeVinculoFamiliar');
+    if (vinculoFamiliar && vinculoFamiliar.value === 'Sim') {
+        divVinculoFamiliarQuem.style.display = 'block';
+        divCidadeVinculoFamiliar.style.display = 'block';
+    } else {
+        divVinculoFamiliarQuem.style.display = 'none';
+        divCidadeVinculoFamiliar.style.display = 'none';
+        document.getElementById('vinculoFamiliarQuem').value = '';
+        document.getElementById('cidadeVinculoFamiliar').value = '';
+    }
+
+    const servicoAcolhimento = document.getElementById('servicoAcolhimento');
+    const divVezesAcolhido = document.getElementById('divVezesAcolhido');
+    if (servicoAcolhimento && servicoAcolhimento.value === 'Sim') {
+        divVezesAcolhido.style.display = 'block';
+    } else {
+        divVezesAcolhido.style.display = 'none';
+        document.getElementById('vezesAcolhido').value = '';
+    }
 }
 
 document.addEventListener("DOMContentLoaded", function() {
     toggleCamposCondicionais();
 
     document.querySelectorAll('input[name="filho"]').forEach(el => el.addEventListener('change', toggleCamposCondicionais));
-    ['estadoCivil','beneficioSocial','medicamentoControlado','usaDrogas','possuiAlergia'].forEach(id => {
+
+    ['estadoCivil','beneficioSocial','medicamentoControlado','usaDrogas','possuiAlergia',
+     'situacaoRua','vinculoFamiliar','servicoAcolhimento'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener('change', toggleCamposCondicionais);
     });
 });
+
 </script>
 </body>
 </html>

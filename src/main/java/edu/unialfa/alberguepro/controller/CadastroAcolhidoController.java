@@ -264,5 +264,4 @@ public class CadastroAcolhidoController {
         model.addAttribute("vinculoFamiliar", CadastroAcolhido.VinculoFamiliar.values());
         model.addAttribute("servicoAcolhimento", CadastroAcolhido.ServicoAcolhimento.values());
     }
-
 }
