@@ -1,78 +1,68 @@
 package edu.unialfa.alberguepro.controller;
 
-import edu.unialfa.alberguepro.model.ControlePatrimonio;
 import edu.unialfa.alberguepro.model.Quarto;
-import edu.unialfa.alberguepro.repository.ControlePatrimonioRepository;
-
-import edu.unialfa.alberguepro.repository.QuartoRepository;
-import jakarta.validation.Valid;
+import edu.unialfa.alberguepro.service.QuartoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
-
-import java.util.List;
-import java.util.Optional;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@RequestMapping("/quarto")
+@RequestMapping("/quartos")
 public class QuartoController {
 
     @Autowired
-    private QuartoRepository quartoRepository;
-
-    @GetMapping
-    public String listarQuartos(Model model) {
-        model.addAttribute("quartos", quartoRepository.findAll());
-        return "quarto/index";
-    }
+    private QuartoService service;
 
     @GetMapping("/novo")
-    public ModelAndView novoQuartoForm() {
-        ModelAndView mv = new ModelAndView("quarto/form");
-        mv.addObject("quartoForm", new Quarto());
-        return mv;
+    public String iniciarCadastro(Model model) {
+        model.addAttribute("quarto", new Quarto());
+        return "quarto/form"; // Sua página Thymeleaf
     }
 
     @PostMapping("/salvar")
-    public ModelAndView salvarQuarto(
-            @Valid @ModelAttribute("quartoForm") Quarto quarto,
-            BindingResult result) {
+    public String salvar(@ModelAttribute Quarto quarto, RedirectAttributes attributes) {
 
-        if (result.hasErrors()) {
-            // Retorna à mesma página com os erros de validação
-            return new ModelAndView("quarto/form");
+        try {
+            service.salvar(quarto);
+            attributes.addFlashAttribute("mensagemSucesso", "Quarto salvo com sucesso!");
+            return "redirect:/quartos/lista";
+        } catch (IllegalArgumentException e) {
+            // Adiciona a mensagem de erro e redireciona para o formulário
+            attributes.addFlashAttribute("mensagemErro", e.getMessage());
+            // Se for novo, volta para a tela de cadastro, se for edição, volta para a lista
+            return "redirect:/quartos/novo";
         }
 
-        // Salva o patrimônio no banco se não houver erros
-        quartoRepository.save(quarto);
-        return new ModelAndView("redirect:/quarto");
+       // service.salvar(quarto);
+
+        // return "redirect:/quartos/lista";
     }
 
+    @GetMapping("/lista")
+    public String listar(Model model) {
+        model.addAttribute("quartos", service.listarTodos());
+        return "quarto-lista"; // Sua página Thymeleaf
+    }
 
     @GetMapping("/editar/{id}")
-    public String quartoForm(@PathVariable("id") Long id, Model model) {
-        Optional<Quarto> quarto = quartoRepository.findById(id);
-        if (quarto.isPresent()) {
-            model.addAttribute("quartoForm", quarto.get());
-            return "quarto/form";
-        } else {
-            return "redirect:/quarto";
+    public String iniciarEdicao(@PathVariable Long id, Model model) {
+        Quarto quarto = service.buscarPorId(id);
+        if (quarto == null) {
+            return "redirect:/quartos/lista"; // Ou página 404
         }
+        model.addAttribute("quarto", quarto);
+        return "quarto/form"; // Usa o mesmo formulário de cadastro
     }
 
-    @GetMapping("/pesquisar")
-    public String pesquisaForm(@RequestParam(value = "filtro", required = false) String filtro, Model model) {
-        List<Quarto> quartos;
-        if (filtro != null && !filtro.isEmpty()) {
-            quartos = quartoRepository.findByQuartoContainingIgnoreCase(filtro);
-        } else {
-            quartos = quartoRepository.findAll();
-        }
-        model.addAttribute("quartos", quartos);
-        model.addAttribute("filtro", filtro);
-        return "/quarto/index";
+
+    @GetMapping("/deletar/{id}")
+    public String deletar(@PathVariable Long id) {
+        service.deletar(id);
+        // Lembre-se que o CascadeType.ALL na Entidade Quarto garantirá
+        // que os Leitos e Vagas associadas sejam deletadas!
+        return "redirect:/quartos/lista";
     }
+
 }
