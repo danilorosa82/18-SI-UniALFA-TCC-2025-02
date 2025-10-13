@@ -8,6 +8,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 public class UsuarioService {
 
@@ -35,6 +37,18 @@ public class UsuarioService {
         }
 
         usuarioRepository.save(usuario);
+    }
+
+    public boolean isUsernameUnique(String username, Long id) {
+        Optional<Usuario> existingUser;
+        if (id == null) {
+            // Usuário novo: verifica se o username já existe
+            existingUser = usuarioRepository.findByUsernameIgnoreCase(username);
+        } else {
+            // Usuário existente: verifica se o username pertence a outro usuário
+            existingUser = usuarioRepository.findByUsernameIgnoreCaseAndIdNot(username, id);
+        }
+        return existingUser.isEmpty(); // Retorna true se estiver vazio (único)
     }
 
     public void excluir(Long id) {

@@ -41,6 +41,10 @@ public class UsuarioController {
 
     @PostMapping("/salvar")
     public String salvarUsuario(@Valid Usuario usuario, BindingResult result) {
+        if (!usuarioService.isUsernameUnique(usuario.getUsername(), usuario.getId())) {
+            result.rejectValue("username", "error.usuario", "Este nome de usuário já está em uso.");
+        }
+
         if (result.hasErrors()) {
             return "admin/usuarios/form";
         }
