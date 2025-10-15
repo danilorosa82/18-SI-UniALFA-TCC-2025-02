@@ -9,6 +9,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.Period;
 
 import java.util.List;
 
@@ -31,6 +32,8 @@ public class CadastroAcolhidoController {
 
         if (acolhido.getNome() == null || acolhido.getNome().trim().isEmpty()) {
             result.rejectValue("nome", "campo.obrigatorio", "O nome é obrigatório.");
+        } else if (!acolhido.getNome().matches("^[A-Za-zÀ-ÖØ-öø-ÿ\\s]{2,}$")) {
+            result.rejectValue("nome", "nome.invalido", "O nome deve ter pelo menos 2 letras e conter apenas caracteres alfabéticos.");
         }
 
         if (acolhido.getDataNascimento() == null) {
@@ -38,8 +41,12 @@ public class CadastroAcolhidoController {
         } else if (acolhido.getDataNascimento().isAfter(LocalDate.now())) {
             result.rejectValue("dataNascimento", "data.invalida", "A data de nascimento não pode ser futura.");
         } else {
-            int idade = LocalDate.now().getYear() - acolhido.getDataNascimento().getYear();
-            acolhido.setIdade(idade);
+            int idade = Period.between(acolhido.getDataNascimento(), LocalDate.now()).getYears();
+            if (idade < 18 || idade > 130 ) {
+                result.rejectValue("dataNascimento", "idade.invalida", "O acolhido deve ter no mínimo 18 anos e no maximo 130 anos.");
+            } else {
+                acolhido.setIdade(idade);
+            }
         }
 
         if (acolhido.getNaturalidade() == null || acolhido.getNaturalidade().trim().isEmpty()) {
@@ -56,18 +63,24 @@ public class CadastroAcolhidoController {
 
         if (acolhido.getRg() == null || acolhido.getRg().trim().isEmpty()) {
             result.rejectValue("rg", "campo.obrigatorio", "O RG é obrigatório.");
-        } else if (!acolhido.getRg().matches("\\d{5,15}")) {
-            result.rejectValue("rg", "rg.invalido", "O RG informado é inválido.");
+        } else {
+            String rgLimpo = acolhido.getRg().replaceAll("[^0-9A-Za-z]", "");
+
+            if (!rgLimpo.matches("\\d{5,9}[A-Za-z]?")) {
+                result.rejectValue("rg", "rg.invalido", "O RG informado é inválido. Deve ter entre 5 e 9 números, podendo ter uma letra no final.");
+            }
         }
 
         if (acolhido.getCpf() == null || acolhido.getCpf().trim().isEmpty()) {
             result.rejectValue("cpf", "campo.obrigatorio", "O CPF é obrigatório.");
-        } else if (!acolhido.getCpf().matches("\\d{11}")) {
-            result.rejectValue("cpf", "cpf.invalido", "O CPF informado é inválido.");
-        }
+        } else {
+            String cpfLimpo = acolhido.getCpf().replaceAll("\\D", "");
 
-        if (acolhido.getCertidaoNascimento() == null || acolhido.getCertidaoNascimento().trim().isEmpty()) {
-            result.rejectValue("certidaoNascimento", "campo.obrigatorio", "A certidão de nascimento é obrigatória.");
+            if (!cpfLimpo.matches("\\d{11}")) {
+                result.rejectValue("cpf", "cpf.invalido", "O CPF informado é inválido. Deve ter exatamente 11 números.");
+            } else if (!isCpfValido(cpfLimpo)) {
+                result.rejectValue("cpf", "cpf.invalido", "O CPF informado é inválido.");
+            }
         }
 
         if (acolhido.getCertidaoNascimento() == null || acolhido.getCertidaoNascimento().trim().isEmpty()) {
@@ -80,18 +93,28 @@ public class CadastroAcolhidoController {
 
         if (acolhido.getEstadoCivil() == null) {
             result.rejectValue("estadoCivil", "campo.obrigatorio", "O estado civil é obrigatório.");
-        } else if ((acolhido.getEstadoCivil() == CadastroAcolhido.EstadoCivil.Casado
-                || acolhido.getEstadoCivil() == CadastroAcolhido.EstadoCivil.UniaoEstavel)
-                && (acolhido.getNomeConjuge() == null || acolhido.getNomeConjuge().trim().isEmpty())) {
-            result.rejectValue("nomeConjuge", "campo.obrigatorio", "O nome do cônjuge é obrigatório.");
+        } else if (acolhido.getEstadoCivil() == CadastroAcolhido.EstadoCivil.Casado
+                || acolhido.getEstadoCivil() == CadastroAcolhido.EstadoCivil.UniaoEstavel) {
+
+            if (acolhido.getNomeConjuge() == null || acolhido.getNomeConjuge().trim().isEmpty()) {
+                result.rejectValue("nomeConjuge", "campo.obrigatorio", "O nome do cônjuge é obrigatório.");
+            } else if (!acolhido.getNomeConjuge().matches("^[A-Za-zÀ-ÖØ-öø-ÿ\\s]{2,}$")) {
+                result.rejectValue("nomeConjuge", "nome.invalido", "O nome do cônjuge deve ter pelo menos 2 letras e conter apenas caracteres alfabéticos.");
+            }
+        } else {
+            acolhido.setNomeConjuge(null);
         }
 
         if (acolhido.getFilho() == null) {
             result.rejectValue("filho", "campo.obrigatorio", "Informe se possui filhos.");
-        } else if (acolhido.getFilho() == CadastroAcolhido.Filho.Sim
-                && (acolhido.getQuantidadeFilhos() == null || acolhido.getQuantidadeFilhos() <= 0)) {
-            result.rejectValue("quantidadeFilhos", "campo.obrigatorio", "Informe a quantidade de filhos.");
+        } else if (acolhido.getFilho() == CadastroAcolhido.Filho.Sim) {
+            if (acolhido.getQuantidadeFilhos() == null || acolhido.getQuantidadeFilhos() <= 0) {
+                result.rejectValue("quantidadeFilhos", "campo.obrigatorio", "Informe a quantidade de filhos.");
+            } else if (acolhido.getQuantidadeFilhos() > 30) {
+                result.rejectValue("quantidadeFilhos", "quantidade.excedida", "A quantidade de filhos não pode ser maior que 30.");
+            }
         }
+
 
         if (acolhido.getEndereco() == null || acolhido.getEndereco().trim().isEmpty()) {
             result.rejectValue("endereco", "campo.obrigatorio", "O endereço é obrigatório.");
@@ -165,7 +188,6 @@ public class CadastroAcolhidoController {
             result.rejectValue("doencaSexualmentetransmissivel", "campo.obrigatorio", "Informe se possui DST.");
         }
 
-
         if (acolhido.getServicoAcolhimento() == null) {
             result.rejectValue("servicoAcolhimento", "campo.obrigatorio", "Informe se já foi acolhido antes.");
         } else if (acolhido.getServicoAcolhimento() == CadastroAcolhido.ServicoAcolhimento.Sim
@@ -189,13 +211,14 @@ public class CadastroAcolhidoController {
             acolhido.setDataIngresso(LocalDate.now());
         }
 
-        if (acolhido.getDataSaida() != null && acolhido.getDataSaida().isBefore(acolhido.getDataIngresso())) {
-            result.rejectValue("dataSaida", "data.invalida", "A data de saída não pode ser anterior à data de ingresso.");
-        }
+        if (acolhido.getDataSaida() != null) {
+            if (acolhido.getDataSaida().isBefore(acolhido.getDataIngresso())) {
+                result.rejectValue("dataSaida", "data.invalida", "A data de saída não pode ser anterior à data de ingresso.");
+            }
 
-        if (result.hasErrors()) {
-            carregarListas(model);
-            return "cadastroAcolhido/form";
+            else if (acolhido.getDataSaida().isAfter(acolhido.getDataIngresso().plusMonths(3))) {
+                result.rejectValue("dataSaida", "data.invalida", "A permanência não pode ultrapassar 3 meses da data de ingresso.");
+            }
         }
 
         if (acolhido.getFilho() == CadastroAcolhido.Filho.Nao) {
@@ -221,6 +244,48 @@ public class CadastroAcolhidoController {
             acolhido.setVinculoFamiliarQuem(null);
         }
 
+        if (result.hasErrors()) {
+            int stepComErro = 1;
+
+
+            if (result.hasFieldErrors("nome") || result.hasFieldErrors("dataNascimento") ||
+                    result.hasFieldErrors("naturalidade") || result.hasFieldErrors("sexo") ||
+                    result.hasFieldErrors("cor") || result.hasFieldErrors("rg") ||
+                    result.hasFieldErrors("cpf") || result.hasFieldErrors("certidaoNascimento") ||
+                    result.hasFieldErrors("filiacao")) {
+                stepComErro = 1;
+            }
+            else if (result.hasFieldErrors("estadoCivil") || result.hasFieldErrors("nomeConjuge") ||
+                    result.hasFieldErrors("filho") || result.hasFieldErrors("quantidadeFilhos")) {
+                stepComErro = 2;
+            }
+            else if (result.hasFieldErrors("endereco") ) {
+                stepComErro = 3;
+            }
+            else if (result.hasFieldErrors("escolaridade") || result.hasFieldErrors("renda") ||
+                    result.hasFieldErrors("beneficioSocial") || result.hasFieldErrors("qualBeneficio")) {
+                stepComErro = 4;
+            }
+            else if (result.hasFieldErrors("estadoSaude") || result.hasFieldErrors("possuiAlergia") ||
+                    result.hasFieldErrors("qualAlergia") || result.hasFieldErrors("fumante") ||
+                    result.hasFieldErrors("bebidaAlcoolica") || result.hasFieldErrors("usaDrogas") ||
+                    result.hasFieldErrors("qualDroga") || result.hasFieldErrors("medicamentoControlado") ||
+                    result.hasFieldErrors("qualMedicamento") || result.hasFieldErrors("doencaSexualmentetransmissivel")) {
+                stepComErro = 5;
+            }
+            else if (result.hasFieldErrors("situacaoRua") || result.hasFieldErrors("tempoRua") ||
+                    result.hasFieldErrors("vinculoFamiliar") || result.hasFieldErrors("cidadeVinculoFamiliar") ||
+                    result.hasFieldErrors("vinculoFamiliarQuem") || result.hasFieldErrors("servicoAcolhimento") ||
+                    result.hasFieldErrors("vezesAcolhido") || result.hasFieldErrors("ultimaCidadeQueEsteve") ||
+                    result.hasFieldErrors("tempoUltimaCidade") || result.hasFieldErrors("objetivoAcolhimento") ||
+                    result.hasFieldErrors("dataIngresso") || result.hasFieldErrors("dataSaida")) {
+                stepComErro = 6;
+            }
+
+            model.addAttribute("stepComErro", stepComErro);
+            carregarListas(model);
+            return "cadastroAcolhido/form";
+        }
 
         service.salvar(acolhido);
         return "redirect:/cadastroAcolhido/listar";
@@ -264,4 +329,31 @@ public class CadastroAcolhidoController {
         model.addAttribute("vinculoFamiliar", CadastroAcolhido.VinculoFamiliar.values());
         model.addAttribute("servicoAcolhimento", CadastroAcolhido.ServicoAcolhimento.values());
     }
+
+    private boolean isCpfValido(String cpf) {
+        if (cpf == null || cpf.length() != 11 || cpf.matches("(\\d)\\1{10}")) {
+            return false;
+        }
+
+        try {
+            int soma = 0;
+            for (int i = 0; i < 9; i++) {
+                soma += (cpf.charAt(i) - '0') * (10 - i);
+            }
+            int primeiroDigito = 11 - (soma % 11);
+            if (primeiroDigito > 9) primeiroDigito = 0;
+
+            soma = 0;
+            for (int i = 0; i < 10; i++) {
+                soma += (cpf.charAt(i) - '0') * (11 - i);
+            }
+            int segundoDigito = 11 - (soma % 11);
+            if (segundoDigito > 9) segundoDigito = 0;
+
+            return (cpf.charAt(9) - '0' == primeiroDigito) && (cpf.charAt(10) - '0' == segundoDigito);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 }
