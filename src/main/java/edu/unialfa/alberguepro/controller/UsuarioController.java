@@ -1,7 +1,7 @@
 package edu.unialfa.alberguepro.controller;
 
+import edu.unialfa.alberguepro.dto.UsuarioDTO;
 import edu.unialfa.alberguepro.model.Usuario;
-import edu.unialfa.alberguepro.repository.UsuarioRepository;
 import edu.unialfa.alberguepro.service.UsuarioService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,14 +22,11 @@ import java.util.Optional;
 public class UsuarioController {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
     private UsuarioService usuarioService;
 
     @GetMapping
     public String listarUsuarios(Model model) {
-        model.addAttribute("usuarios", usuarioRepository.findAll());
+        model.addAttribute("usuarios", usuarioService.findAllDTO());
         return "admin/usuarios/index"; // -> templates/admin/usuarios/index.html
     }
 
@@ -54,7 +51,7 @@ public class UsuarioController {
 
     @GetMapping("/editar/{id}")
     public String editarUsuarioForm(@PathVariable("id") Long id, Model model) {
-        Optional<Usuario> usuario = usuarioRepository.findById(id);
+        Optional<UsuarioDTO> usuario = usuarioService.findByIdDTO(id);
         if (usuario.isPresent()) {
             model.addAttribute("usuario", usuario.get());
             return "admin/usuarios/form"; // Reutiliza o mesmo formulário de cadastro
