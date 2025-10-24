@@ -6,9 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import edu.unialfa.alberguepro.dto.UsuarioDTO;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UsuarioService {
@@ -81,5 +84,15 @@ public class UsuarioService {
 
         // Salva a alteração no banco de dados
         usuarioRepository.save(usuario);
+    }
+
+    public List<UsuarioDTO> findAllDTO() {
+        return usuarioRepository.findAll().stream()
+                .map(UsuarioDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public Optional<UsuarioDTO> findByIdDTO(Long id) {
+        return usuarioRepository.findById(id).map(UsuarioDTO::new);
     }
 }
