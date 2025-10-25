@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -28,7 +29,8 @@ public class CadastroAcolhidoController {
     }
 
     @PostMapping("salvar")
-    public String salvar(@ModelAttribute("acolhido") CadastroAcolhido acolhido, BindingResult result, Model model) {
+    public String salvar(@ModelAttribute("acolhido") CadastroAcolhido acolhido, BindingResult result, Model model,
+                         RedirectAttributes redirectAttributes) {
 
         if (acolhido.getNome() == null || acolhido.getNome().trim().isEmpty()) {
             result.rejectValue("nome", "campo.obrigatorio", "O nome é obrigatório.");
@@ -288,6 +290,7 @@ public class CadastroAcolhidoController {
         }
 
         service.salvar(acolhido);
+        redirectAttributes.addFlashAttribute("mensagemSucesso", "Dados salvos com sucesso!");
         return "redirect:/cadastroAcolhido/listar";
     }
 
