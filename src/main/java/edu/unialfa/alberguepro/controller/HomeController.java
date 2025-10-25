@@ -46,8 +46,8 @@ public class HomeController {
                         @RequestParam(required = false, defaultValue = "0") int pageLeitos) {
         DashboardDTO dashboardDTO = new DashboardDTO();
 
-        // Acolhidos Ativos (com vagas ativas)
-        long totalAcolhidosAtivos = vagaRepository.countByAcolhidoIsNotNullAndDataSaidaIsNull();
+        // Acolhidos Ativos (todos os acolhidos cadastrados no sistema)
+        long totalAcolhidosAtivos = cadastroAcolhidoRepository.count();
         dashboardDTO.setTotalAcolhidos(totalAcolhidosAtivos);
 
         // Leitos

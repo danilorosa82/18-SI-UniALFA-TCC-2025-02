@@ -16,4 +16,8 @@ public interface VagaRepository extends JpaRepository<Vaga, Long>  {
             "WHERE v.acolhido IS NOT NULL AND v.dataSaida IS NULL " +
             "GROUP BY v.leito.quarto.numeroQuarto")
     List<Object[]> countOccupiedBedsByRoom();
+
+    @Query("SELECT COUNT(DISTINCT v.acolhido.id) FROM Vaga v " +
+            "WHERE v.acolhido IS NOT NULL AND v.dataSaida IS NULL")
+    long countDistinctAcolhidosAtivos();
 }
