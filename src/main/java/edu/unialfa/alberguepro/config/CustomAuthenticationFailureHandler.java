@@ -31,6 +31,8 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
         String username = request.getParameter("username");
         Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(username);
 
+        String errorMessage = "Usuário ou senha inválidos.";
+
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
             if (usuario.isAtivo()) {
@@ -42,11 +44,14 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
                     usuario.setFailedLoginAttempts(0);
                     usuarioRepository.updateAccountLockedUntil(usuario.getAccountLockedUntil(), username);
                     usuarioRepository.updateFailedLoginAttempts(usuario.getFailedLoginAttempts(), username);
-                    exception = new LockedException("Sua conta foi bloqueada devido a muitas tentativas de login falhas. Tente novamente em " + LOCK_TIME_MINUTES + " minutos.");
+                    errorMessage = "Sua conta foi bloqueada devido a muitas tentativas de login falhas. Tente novamente em " + LOCK_TIME_MINUTES + " minutos.";
                 }
+            } else {
+                errorMessage = "Sua conta está inativa.";
             }
         }
 
+        exception = new LockedException(errorMessage);
         super.onAuthenticationFailure(request, response, exception);
     }
 }

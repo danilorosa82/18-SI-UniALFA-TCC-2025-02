@@ -71,6 +71,6 @@ public class ControlePatrimonioController {
         }
         model.addAttribute("patrimonios", controlePatrimonios);
         model.addAttribute("filtro", filtro);
-        return "/patrimonio/index";
+        return "patrimonio/index";
     }
 }
