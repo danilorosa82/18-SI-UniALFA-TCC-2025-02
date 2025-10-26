@@ -25,6 +25,10 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
     private static final int MAX_FAILED_ATTEMPTS = 3;
     private static final int LOCK_TIME_MINUTES = 10;
 
+    public CustomAuthenticationFailureHandler() {
+        setDefaultFailureUrl("/login?error=true");
+    }
+
     @Override
     @Transactional
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
@@ -51,7 +55,12 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
             }
         }
 
-        exception = new LockedException(errorMessage);
-        super.onAuthenticationFailure(request, response, exception);
+        // Salva a mensagem de erro na sessão
+        request.getSession().setAttribute("errorMessage", errorMessage);
+
+        // Cria uma nova exceção com a mensagem personalizada
+        AuthenticationException newException = new LockedException(errorMessage);
+
+        super.onAuthenticationFailure(request, response, newException);
     }
 }

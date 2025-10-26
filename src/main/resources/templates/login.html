@@ -48,11 +48,8 @@
         <div th:if="${param.error}" class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="fas fa-exclamation-triangle"></i>
             <strong>Erro ao fazer login!</strong>
-            <p th:if="${session.SPRING_SECURITY_LAST_EXCEPTION != null}" 
-               th:text="${session.SPRING_SECURITY_LAST_EXCEPTION.message}" class="mb-0"></p>
-            <p th:if="${session.SPRING_SECURITY_LAST_EXCEPTION == null}" class="mb-0">
-                Usuário ou senha incorretos. Por favor, verifique suas credenciais e tente novamente.
-            </p>
+            <p th:if="${session.errorMessage != null}" 
+               th:text="${session.errorMessage}" class="mb-0"></p>
             <button type="button" class="close" data-dismiss="alert" aria-label="Fechar">
                 <span aria-hidden="true">&times;</span>
             </button>
