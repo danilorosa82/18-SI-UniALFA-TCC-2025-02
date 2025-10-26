@@ -25,11 +25,17 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
     private static final int MAX_FAILED_ATTEMPTS = 3;
     private static final int LOCK_TIME_MINUTES = 10;
 
+    public CustomAuthenticationFailureHandler() {
+        setDefaultFailureUrl("/login?error=true");
+    }
+
     @Override
     @Transactional
     public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) throws IOException, ServletException {
         String username = request.getParameter("username");
         Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(username);
+
+        String errorMessage = "Usuário ou senha inválidos.";
 
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
@@ -42,11 +48,19 @@ public class CustomAuthenticationFailureHandler extends SimpleUrlAuthenticationF
                     usuario.setFailedLoginAttempts(0);
                     usuarioRepository.updateAccountLockedUntil(usuario.getAccountLockedUntil(), username);
                     usuarioRepository.updateFailedLoginAttempts(usuario.getFailedLoginAttempts(), username);
-                    exception = new LockedException("Sua conta foi bloqueada devido a muitas tentativas de login falhas. Tente novamente em " + LOCK_TIME_MINUTES + " minutos.");
+                    errorMessage = "Sua conta foi bloqueada devido a muitas tentativas de login falhas. Tente novamente em " + LOCK_TIME_MINUTES + " minutos.";
                 }
+            } else {
+                errorMessage = "Sua conta está inativa.";
             }
         }
 
-        super.onAuthenticationFailure(request, response, exception);
+        // Salva a mensagem de erro na sessão
+        request.getSession().setAttribute("errorMessage", errorMessage);
+
+        // Cria uma nova exceção com a mensagem personalizada
+        AuthenticationException newException = new LockedException(errorMessage);
+
+        super.onAuthenticationFailure(request, response, newException);
     }
 }
