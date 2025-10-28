@@ -103,11 +103,8 @@
 </section>
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Dashboard charts initialization started');
-        
         // Dados do Patrimônio
         var patrimonioData = /*[[${dashboard.patrimonioPorStatus}]]*/ {};
-        console.log('Patrimonio Data:', patrimonioData);
         
         if (Object.keys(patrimonioData).length > 0) {
             var patrimonioLabels = [];
@@ -219,13 +216,11 @@
             
             var chartPatrimonio = new ApexCharts(document.querySelector("#chartPatrimonio"), optionsPatrimonio);
             chartPatrimonio.render();
-            console.log('Patrimonio chart rendered');
         }
         
         // Dados dos Leitos
         var leitosOcupados = /*[[${dashboard.leitosOcupados}]]*/ 0;
         var leitosLivres = /*[[${dashboard.leitosLivres}]]*/ 0;
-        console.log('Leitos - Ocupados:', leitosOcupados, 'Livres:', leitosLivres);
         
         var optionsLeitos = {
             series: [{
@@ -313,11 +308,9 @@
         
         var chartLeitos = new ApexCharts(document.querySelector("#chartLeitos"), optionsLeitos);
         chartLeitos.render();
-        console.log('Leitos chart rendered');
         
         // Dados do Estoque
         var produtosEstoque = /*[[${produtosBaixoEstoque.source}]]*/ [];
-        console.log('Produtos Estoque:', produtosEstoque);
         
         if (produtosEstoque.length > 0) {
             // Pegar apenas os 10 primeiros produtos
@@ -416,7 +409,6 @@
             
             var chartEstoque = new ApexCharts(document.querySelector("#chartEstoque"), optionsEstoque);
             chartEstoque.render();
-            console.log('Estoque chart rendered');
         }
     });
 </script>
