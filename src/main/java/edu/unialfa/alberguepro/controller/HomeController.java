@@ -41,9 +41,7 @@ public class HomeController {
     private LeitoRepository leitoRepository;
 
     @GetMapping("/")
-    public String index(Model model,
-                        @RequestParam(required = false, defaultValue = "0") int pageEstoque,
-                        @RequestParam(required = false, defaultValue = "0") int pageLeitos) {
+    public String index(Model model) {
         DashboardDTO dashboardDTO = new DashboardDTO();
 
         // Acolhidos Ativos (todos os acolhidos cadastrados no sistema)
@@ -79,28 +77,14 @@ public class HomeController {
                 .collect(Collectors.groupingBy(ControlePatrimonio::getStatus, Collectors.counting()));
         dashboardDTO.setPatrimonioPorStatus(patrimonioPorStatus);
 
-        // Estoque
-        List<Produto> produtosBaixoEstoque = produtoRepository.findTop5ByOrderByQuantidadeAsc();
+        // Estoque - Top 10 produtos com menor quantidade
+        List<Produto> produtosBaixoEstoque = produtoRepository.findTop10ByOrderByQuantidadeAsc();
         Map<String, Integer> estoqueBaixo = produtosBaixoEstoque.stream()
                 .collect(Collectors.toMap(Produto::getNome, Produto::getQuantidade));
         dashboardDTO.setEstoqueBaixo(estoqueBaixo);
 
-
         model.addAttribute("dashboard", dashboardDTO);
-
-        // Paginação para Estoque Baixo
-        PagedListHolder<Produto> pagedListEstoque = new PagedListHolder<>(produtoRepository.findAll());
-        pagedListEstoque.setPageSize(5);
-        pagedListEstoque.setPage(pageEstoque);
-        model.addAttribute("produtosBaixoEstoque", pagedListEstoque);
-
-        // Paginação para Leitos
-        List<Vaga> leitos = vagaRepository.findAll();
-        PagedListHolder<Vaga> pagedListLeitos = new PagedListHolder<>(leitos);
-        pagedListLeitos.setPageSize(5);
-        pagedListLeitos.setPage(pageLeitos);
-        model.addAttribute("leitos", pagedListLeitos);
-
+        model.addAttribute("produtosBaixoEstoque", new PagedListHolder<>(produtosBaixoEstoque));
 
         return "index";
     }

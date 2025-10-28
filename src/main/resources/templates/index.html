@@ -55,155 +55,370 @@
         </div>
     </div>
 
-    <!-- Linha das Tabelas -->
-    <div class="row table-row">
+    <!-- Linha dos Gráficos -->
+    <div class="row">
         <!-- Coluna da Esquerda -->
         <div class="col-md-6 d-flex flex-column">
-            <!-- Tabela de Patrimônio -->
+            <!-- Gráfico de Patrimônio -->
             <div class="card card-primary card-outline">
                 <div class="card-header">
                     <h3 class="card-title">Patrimônio por Status</h3>
                 </div>
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover table-custom">
-                            <thead>
-                            <tr>
-                                <th>Status</th>
-                                <th>Quantidade</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="entry : ${dashboard.patrimonioPorStatus}">
-                                <td>
-                                    <span th:switch="${entry.key.toLowerCase()}">
-                                        <span th:case="'em uso'" class="badge-status badge-em-uso" th:text="${entry.key}"></span>
-                                        <span th:case="'disponivel'" class="badge-status badge-disponivel" th:text="${entry.key}"></span>
-                                        <span th:case="'em manutencao'" class="badge-status badge-manutencao" th:text="${entry.key}"></span>
-                                        <span th:case="'baixado'" class="badge-status badge-baixado" th:text="${entry.key}"></span>
-                                        <span th:case="*" class="badge-status badge-default" th:text="${entry.key}"></span>
-                                    </span>
-                                </td>
-                                <td th:text="${entry.value}"></td>
-                            </tr>
-                            <tr th:if="${#maps.isEmpty(dashboard.patrimonioPorStatus)}">
-                                <td colspan="2" class="text-center">Nenhum patrimônio cadastrado</td>
-                            </tr>
-                            </tbody>
-                        </table>
+                <div class="card-body">
+                    <div id="chartPatrimonio" style="min-height: 350px;"></div>
+                    <div th:if="${#maps.isEmpty(dashboard.patrimonioPorStatus)}" class="text-center p-3">
+                        <p class="text-muted">Nenhum patrimônio cadastrado</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Tabela de Leitos -->
-            <div class="card card-info card-outline mt-3 flex-grow-1 d-flex flex-column">
+            <!-- Gráfico de Leitos -->
+            <div class="card card-info card-outline mt-3">
                 <div class="card-header">
                     <h3 class="card-title">Situação dos Leitos</h3>
                 </div>
-                <div class="card-body p-0 flex-grow-1">
-                    <div class="table-responsive h-100">
-                        <table class="table table-striped table-hover table-custom">
-                            <thead>
-                            <tr>
-                                <th>Quarto</th>
-                                <th>Leito</th>
-                                <th>Status</th>
-                                <th>Acolhido</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="leito : ${leitos.pageList}">
-                                <td th:text="${leito.leito?.quarto?.numeroQuarto}"></td>
-                                <td th:text="${leito.leito?.numeroLeito}"></td>
-                                <td>
-                                    <span th:if="${leito.acolhido != null}" class="badge bg-danger">Ocupado</span>
-                                    <span th:if="${leito.acolhido == null}" class="badge bg-success">Livre</span>
-                                </td>
-                                <td th:text="${leito.acolhido?.nome}"></td>
-                            </tr>
-                            <tr th:if="${leitos.source.isEmpty()}">
-                                <td colspan="4" class="text-center">Nenhum acolhido atribuído a um leito</td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="card-footer clearfix" th:if="${leitos.pageCount > 1}">
-                    <ul class="pagination pagination-sm m-0 float-right">
-                        <li class="page-item" th:classappend="${leitos.isFirstPage()} ? 'disabled' : ''">
-                            <a class="page-link" th:href="@{/(pageLeitos=0, pageEstoque=${produtosBaixoEstoque.page})}">« Início</a>
-                        </li>
-                        <li class="page-item" th:classappend="${leitos.isFirstPage()} ? 'disabled' : ''">
-                            <a class="page-link" th:href="@{/(pageLeitos=${leitos.page - 1}, pageEstoque=${produtosBaixoEstoque.page})}">‹ Anterior</a>
-                        </li>
-                        <li class="page-item" th:each="i : ${#numbers.sequence(0, leitos.pageCount - 1)}" th:classappend="${i == leitos.page} ? 'active' : ''">
-                            <a class="page-link" th:href="@{/(pageLeitos=${i}, pageEstoque=${produtosBaixoEstoque.page})}" th:text="${i + 1}"></a>
-                        </li>
-                        <li class="page-item" th:classappend="${leitos.isLastPage()} ? 'disabled' : ''">
-                            <a class="page-link" th:href="@{/(pageLeitos=${leitos.page + 1}, pageEstoque=${produtosBaixoEstoque.page})}">Próximo ›</a>
-                        </li>
-                        <li class="page-item" th:classappend="${leitos.isLastPage()} ? 'disabled' : ''">
-                            <a class="page-link" th:href="@{/(pageLeitos=${leitos.pageCount - 1}, pageEstoque=${produtosBaixoEstoque.page})}">Fim »</a>
-                        </li>
-                    </ul>
+                <div class="card-body">
+                    <div id="chartLeitos" style="min-height: 350px;"></div>
                 </div>
             </div>
         </div>
 
         <!-- Coluna da Direita -->
-        <div class="col-md-6 d-flex flex-column">
-            <!-- Tabela de Estoque Baixo -->
-            <div class="card card-danger card-outline flex-grow-1 d-flex flex-column">
+        <div class="col-md-6">
+            <!-- Gráfico de Estoque Baixo -->
+            <div class="card card-danger card-outline">
                 <div class="card-header">
-                    <h3 class="card-title">Produtos com Estoque Baixo</h3>
+                    <h3 class="card-title">Produtos com Estoque Baixo (Top 10)</h3>
                 </div>
-                <div class="card-body p-0 flex-grow-1">
-                    <div class="table-responsive h-100">
-                        <table class="table table-striped table-hover table-custom">
-                            <thead>
-                            <tr>
-                                <th>Produto</th>
-                                <th>Quantidade</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr th:each="produto : ${produtosBaixoEstoque.pageList}">
-                                <td th:text="${produto.nome}"></td>
-                                <td class="estoque-baixo" th:text="${produto.quantidade}"></td>
-                            </tr>
-                            <tr th:if="${produtosBaixoEstoque.source.isEmpty()}">
-                                <td colspan="2" class="text-center">Nenhum produto com estoque baixo</td>
-                            </tr>
-                            </tbody>
-                        </table>
+                <div class="card-body">
+                    <div id="chartEstoque" style="min-height: 730px;"></div>
+                    <div th:if="${produtosBaixoEstoque.source.isEmpty()}" class="text-center p-3">
+                        <p class="text-muted">Nenhum produto com estoque baixo</p>
                     </div>
-                </div>
-                <div class="card-footer clearfix" th:if="${produtosBaixoEstoque.pageCount > 1}">
-                    <ul class="pagination pagination-sm m-0 float-right">
-                        <li class="page-item" th:classappend="${produtosBaixoEstoque.isFirstPage()} ? 'disabled' : ''">
-                            <a class="page-link" th:href="@{/(pageEstoque=0, pageLeitos=${leitos.page})}">« Início</a>
-                        </li>
-                        <li class="page-item" th:classappend="${produtosBaixoEstoque.isFirstPage()} ? 'disabled' : ''">
-                            <a class="page-link" th:href="@{/(pageEstoque=${produtosBaixoEstoque.page - 1}, pageLeitos=${leitos.page})}">‹ Anterior</a>
-                        </li>
-                        <li class="page-item" th:each="i : ${#numbers.sequence(0, produtosBaixoEstoque.pageCount - 1)}" th:classappend="${i == produtosBaixoEstoque.page} ? 'active' : ''">
-                            <a class="page-link" th:href="@{/(pageEstoque=${i}, pageLeitos=${leitos.page})}" th:text="${i + 1}"></a>
-                        </li>
-                        <li class="page-item" th:classappend="${produtosBaixoEstoque.isLastPage()} ? 'disabled' : ''">
-                            <a class="page-link" th:href="@{/(pageEstoque=${produtosBaixoEstoque.page + 1}, pageLeitos=${leitos.page})}">Próximo ›</a>
-                        </li>
-                        <li class="page-item" th:classappend="${produtosBaixoEstoque.isLastPage()} ? 'disabled' : ''">
-                            <a class="page-link" th:href="@{/(pageEstoque=${produtosBaixoEstoque.pageCount - 1}, pageLeitos=${leitos.page})}">Fim »</a>
-                        </li>
-                    </ul>
                 </div>
             </div>
         </div>
     </div>
 
 </section>
-<script>
-
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Dashboard charts initialization started');
+        
+        // Dados do Patrimônio
+        var patrimonioData = /*[[${dashboard.patrimonioPorStatus}]]*/ {};
+        console.log('Patrimonio Data:', patrimonioData);
+        
+        if (Object.keys(patrimonioData).length > 0) {
+            var patrimonioLabels = [];
+            var patrimonioValues = [];
+            var patrimonioColors = [];
+            
+            // Cores para cada status (seguindo paleta do site)
+            var statusColors = {
+                'Em Uso': '#007bff',
+                'Disponivel': '#28a745',
+                'Em Manutencao': '#ffc107',
+                'Baixado': '#dc3545'
+            };
+            
+            for (var key in patrimonioData) {
+                patrimonioLabels.push(key);
+                patrimonioValues.push(patrimonioData[key]);
+                patrimonioColors.push(statusColors[key] || '#6c757d');
+            }
+            
+            var optionsPatrimonio = {
+                series: patrimonioValues,
+                chart: {
+                    type: 'donut',
+                    height: 350,
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+                    toolbar: {
+                        show: true
+                    }
+                },
+                labels: patrimonioLabels,
+                colors: patrimonioColors,
+                legend: {
+                    position: 'bottom',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    markers: {
+                        width: 12,
+                        height: 12,
+                        radius: 3
+                    }
+                },
+                responsive: [{
+                    breakpoint: 480,
+                    options: {
+                        chart: {
+                            width: 300
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }],
+                dataLabels: {
+                    enabled: true,
+                    formatter: function(val, opts) {
+                        return opts.w.config.series[opts.seriesIndex];
+                    },
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        colors: ['#fff']
+                    },
+                    dropShadow: {
+                        enabled: false
+                    }
+                },
+                plotOptions: {
+                    pie: {
+                        donut: {
+                            size: '65%',
+                            labels: {
+                                show: true,
+                                name: {
+                                    show: true,
+                                    fontSize: '16px',
+                                    fontWeight: 600,
+                                    color: '#343a40'
+                                },
+                                value: {
+                                    show: true,
+                                    fontSize: '24px',
+                                    fontWeight: 700,
+                                    color: '#007bff'
+                                },
+                                total: {
+                                    show: true,
+                                    label: 'Total',
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    color: '#6c757d',
+                                    formatter: function (w) {
+                                        return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                tooltip: {
+                    theme: 'light',
+                    y: {
+                        formatter: function(val) {
+                            return val + " itens";
+                        }
+                    }
+                }
+            };
+            
+            var chartPatrimonio = new ApexCharts(document.querySelector("#chartPatrimonio"), optionsPatrimonio);
+            chartPatrimonio.render();
+            console.log('Patrimonio chart rendered');
+        }
+        
+        // Dados dos Leitos
+        var leitosOcupados = /*[[${dashboard.leitosOcupados}]]*/ 0;
+        var leitosLivres = /*[[${dashboard.leitosLivres}]]*/ 0;
+        console.log('Leitos - Ocupados:', leitosOcupados, 'Livres:', leitosLivres);
+        
+        var optionsLeitos = {
+            series: [{
+                name: 'Quantidade',
+                data: [leitosOcupados, leitosLivres]
+            }],
+            chart: {
+                type: 'bar',
+                height: 350,
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+                toolbar: {
+                    show: true
+                }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: true,
+                    distributed: true,
+                    barHeight: '50%',
+                    dataLabels: {
+                        position: 'top'
+                    }
+                }
+            },
+            colors: ['#dc3545', '#28a745'],
+            dataLabels: {
+                enabled: true,
+                offsetX: 30,
+                style: {
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    colors: ['#fff']
+                }
+            },
+            xaxis: {
+                categories: ['Ocupados', 'Livres'],
+                title: {
+                    text: 'Quantidade de Leitos',
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        color: '#343a40'
+                    }
+                },
+                labels: {
+                    style: {
+                        colors: '#6c757d',
+                        fontSize: '12px'
+                    }
+                }
+            },
+            yaxis: {
+                title: {
+                    text: 'Status',
+                    style: {
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        color: '#343a40'
+                    }
+                },
+                labels: {
+                    style: {
+                        colors: '#6c757d',
+                        fontSize: '13px',
+                        fontWeight: 500
+                    }
+                }
+            },
+            legend: {
+                show: false
+            },
+            tooltip: {
+                theme: 'light',
+                y: {
+                    formatter: function(val) {
+                        return val + " leitos";
+                    }
+                }
+            },
+            grid: {
+                borderColor: '#e9ecef',
+                strokeDashArray: 3
+            }
+        };
+        
+        var chartLeitos = new ApexCharts(document.querySelector("#chartLeitos"), optionsLeitos);
+        chartLeitos.render();
+        console.log('Leitos chart rendered');
+        
+        // Dados do Estoque
+        var produtosEstoque = /*[[${produtosBaixoEstoque.source}]]*/ [];
+        console.log('Produtos Estoque:', produtosEstoque);
+        
+        if (produtosEstoque.length > 0) {
+            // Pegar apenas os 10 primeiros produtos
+            var top10Produtos = produtosEstoque.slice(0, 10);
+            var produtosNomes = [];
+            var produtosQuantidades = [];
+            
+            top10Produtos.forEach(function(produto) {
+                produtosNomes.push(produto.nome);
+                produtosQuantidades.push(produto.quantidade);
+            });
+            
+            var optionsEstoque = {
+                series: [{
+                    name: 'Quantidade',
+                    data: produtosQuantidades
+                }],
+                chart: {
+                    type: 'bar',
+                    height: 730,
+                    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+                    toolbar: {
+                        show: true
+                    }
+                },
+                plotOptions: {
+                    bar: {
+                        horizontal: true,
+                        barHeight: '70%',
+                        dataLabels: {
+                            position: 'top'
+                        }
+                    }
+                },
+                colors: ['#dc3545'],
+                dataLabels: {
+                    enabled: true,
+                    offsetX: 30,
+                    style: {
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        colors: ['#fff']
+                    }
+                },
+                xaxis: {
+                    categories: produtosNomes,
+                    title: {
+                        text: 'Quantidade em Estoque',
+                        style: {
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            color: '#343a40'
+                        }
+                    },
+                    labels: {
+                        style: {
+                            colors: '#6c757d',
+                            fontSize: '12px'
+                        }
+                    }
+                },
+                yaxis: {
+                    title: {
+                        text: 'Produtos',
+                        style: {
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            color: '#343a40'
+                        }
+                    },
+                    labels: {
+                        style: {
+                            colors: '#6c757d',
+                            fontSize: '12px'
+                        },
+                        maxWidth: 150
+                    }
+                },
+                tooltip: {
+                    theme: 'light',
+                    y: {
+                        formatter: function(val) {
+                            return val + " unidades";
+                        }
+                    }
+                },
+                grid: {
+                    borderColor: '#e9ecef',
+                    strokeDashArray: 3,
+                    row: {
+                        colors: ['#f8f9fa', 'transparent'],
+                        opacity: 0.5
+                    }
+                }
+            };
+            
+            var chartEstoque = new ApexCharts(document.querySelector("#chartEstoque"), optionsEstoque);
+            chartEstoque.render();
+            console.log('Estoque chart rendered');
+        }
+    });
 </script>
 </body>
 </html>
