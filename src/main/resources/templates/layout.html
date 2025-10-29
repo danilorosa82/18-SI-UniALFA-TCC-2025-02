@@ -9,6 +9,287 @@
     <!-- CSS do AdminLTE e FontAwesome -->
     <link rel="stylesheet" th:href="@{/webjars/AdminLTE/3.2.0/dist/css/adminlte.min.css}">
     <link rel="stylesheet" th:href="@{/webjars/AdminLTE/3.2.0/plugins/fontawesome-free/css/all.min.css}">
+    <style>
+        /* Reduzir tamanhos para simular zoom 75% (menos agressivo que 67%) */
+        
+        /* Fonte base menor */
+        body, html {
+            font-size: 13px !important; /* padrão é 14px, agora 75% = ~13px */
+        }
+        
+        /* Ajustar títulos */
+        h1 { font-size: 2rem !important; }
+        h2 { font-size: 1.6rem !important; }
+        h3 { font-size: 1.4rem !important; }
+        h4 { font-size: 1.2rem !important; }
+        h5 { font-size: 1.05rem !important; }
+        h6 { font-size: 0.95rem !important; }
+        
+        /* Cards e boxes menores */
+        .card {
+            margin-bottom: 0.9rem !important;
+        }
+        
+        .card-header {
+            padding: 0.6rem 0.9rem !important;
+        }
+        
+        .card-body {
+            padding: 0.9rem !important;
+        }
+        
+        .card-title {
+            font-size: 1.05rem !important;
+            margin-bottom: 0 !important;
+        }
+        
+        /* Small boxes do dashboard */
+        .small-box {
+            height: auto !important;
+        }
+        
+        .small-box .inner {
+            padding: 0.7rem !important;
+        }
+        
+        .small-box h3 {
+            font-size: 2.2rem !important;
+        }
+        
+        .small-box p {
+            font-size: 0.95rem !important;
+        }
+        
+        .small-box .icon {
+            font-size: 4.5rem !important;
+        }
+        
+        /* Tabelas */
+        .table {
+            font-size: 0.9rem !important;
+        }
+        
+        .table th,
+        .table td {
+            padding: 0.45rem !important;
+        }
+        
+        /* Botões */
+        .btn {
+            padding: 0.35rem 0.7rem !important;
+            font-size: 0.9rem !important;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem !important;
+            font-size: 0.8rem !important;
+        }
+        
+        .btn-lg {
+            padding: 0.45rem 0.9rem !important;
+            font-size: 1.05rem !important;
+        }
+        
+        /* Formulários */
+        .form-control,
+        .form-select {
+            padding: 0.35rem 0.7rem !important;
+            font-size: 0.9rem !important;
+            height: auto !important;
+        }
+        
+        .form-group {
+            margin-bottom: 0.7rem !important;
+        }
+        
+        label {
+            font-size: 0.9rem !important;
+            margin-bottom: 0.25rem !important;
+        }
+        
+        /* Barra lateral - REDUZIDA */
+        .main-sidebar {
+            width: 220px !important; /* aumentado de 200px para 220px */
+        }
+        
+        /* Ajustar content-wrapper para compensar sidebar menor */
+        body:not(.sidebar-collapse) .content-wrapper,
+        body:not(.sidebar-collapse) .main-footer,
+        body:not(.sidebar-collapse) .main-header {
+            margin-left: 220px !important; /* aumentado de 200px para 220px */
+        }
+        
+        /* Quando sidebar está colapsado, usar valores padrão do AdminLTE */
+        body.sidebar-collapse .content-wrapper,
+        body.sidebar-collapse .main-footer,
+        body.sidebar-collapse .main-header {
+            margin-left: 4.6rem !important; /* valor padrão do AdminLTE */
+        }
+        
+        body.sidebar-collapse .main-sidebar {
+            width: 4.6rem !important; /* valor padrão colapsado */
+        }
+        
+        /* Esconder texto do menu quando colapsado */
+        body.sidebar-collapse .nav-sidebar .nav-link p {
+            display: none !important;
+        }
+        
+        /* Esconder setas quando colapsado */
+        body.sidebar-collapse .nav-sidebar .nav-link .right {
+            display: none !important;
+        }
+        
+        /* Animação para o texto quando expandir - MAIS RÁPIDA */
+        body:not(.sidebar-collapse) .nav-sidebar .nav-link p {
+            opacity: 0;
+            animation: fadeInText 0.2s ease-in-out 0.2s forwards;
+        }
+        
+        body:not(.sidebar-collapse) .nav-sidebar .nav-link .right {
+            opacity: 0;
+            animation: fadeInText 0.2s ease-in-out 0.2s forwards;
+        }
+        
+        @keyframes fadeInText {
+            from {
+                opacity: 0;
+                transform: translateX(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Centralizar ícones quando colapsado */
+        body.sidebar-collapse .nav-sidebar .nav-link {
+            text-align: center !important;
+            padding: 0.5rem !important;
+        }
+        
+        body.sidebar-collapse .nav-sidebar .nav-link .nav-icon {
+            margin-right: 0 !important;
+        }
+        
+        /* Manter espaçamento correto dos ícones quando expandido */
+        body:not(.sidebar-collapse) .nav-sidebar .nav-link {
+            text-align: left !important;
+            padding: 0.55rem 0.8rem !important;
+        }
+        
+        body:not(.sidebar-collapse) .nav-sidebar .nav-link .nav-icon {
+            margin-right: 0.6rem !important;
+            width: 1.4rem !important;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        /* Esconder nome da marca quando colapsado */
+        body.sidebar-collapse .brand-text {
+            display: none !important;
+        }
+        
+        /* Animação para o nome da marca quando expandir - MAIS RÁPIDA */
+        body:not(.sidebar-collapse) .brand-text {
+            opacity: 0;
+            animation: fadeInText 0.2s ease-in-out 0.2s forwards;
+        }
+        
+        /* Garantir transição suave */
+        .main-sidebar,
+        .content-wrapper,
+        .main-header,
+        .main-footer {
+            transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out !important;
+        }
+        
+        /* Menu lateral */
+        .nav-sidebar .nav-link {
+            padding: 0.55rem 0.8rem !important;
+            font-size: 1.05rem !important;
+        }
+        
+        .nav-sidebar .nav-link .nav-icon {
+            font-size: 1.15rem !important;
+            margin-right: 0.6rem !important;
+            width: 1.4rem !important;
+        }
+        
+        /* Setas de dropdown - garantir que apareçam */
+        .nav-sidebar .nav-link .right {
+            font-size: 1rem !important;
+            transition: transform 0.3s ease !important;
+        }
+        
+        /* Quando o menu está aberto */
+        .nav-item.menu-open > .nav-link .right {
+            transform: rotate(-90deg) !important;
+        }
+        
+        .brand-link {
+            padding: 0.8rem 1rem !important;
+            font-size: 1.35rem !important; /* aumentado de 1.25rem para 1.35rem */
+            font-weight: 500 !important;
+        }
+        
+        /* Navbar superior */
+        .main-header {
+            padding: 0 0.9rem !important;
+        }
+        
+        .navbar-nav .nav-link {
+            padding: 0.35rem 0.7rem !important;
+        }
+        
+        /* Footer */
+        .main-footer {
+            padding: 0.7rem !important;
+            font-size: 0.85rem !important;
+        }
+        
+        /* Content wrapper */
+        .content-header {
+            padding: 0.7rem 0 !important;
+        }
+        
+        .content {
+            padding-top: 0.5rem !important;
+        }
+        
+        /* Badges */
+        .badge {
+            padding: 0.25rem 0.45rem !important;
+            font-size: 0.8rem !important;
+        }
+        
+        /* Alerts */
+        .alert {
+            padding: 0.6rem 0.9rem !important;
+            font-size: 0.9rem !important;
+        }
+        
+        /* Input groups */
+        .input-group-text {
+            padding: 0.35rem 0.7rem !important;
+            font-size: 0.9rem !important;
+        }
+        
+        /* Ajuste para submenu (treeview) */
+        .nav-treeview > .nav-item > .nav-link {
+            padding-left: 2.4rem !important;
+            font-size: 0.98rem !important; /* aumentado de 0.9rem para 0.98rem */
+        }
+        
+        .nav-treeview > .nav-item > .nav-link .nav-icon {
+            font-size: 0.9rem !important;
+        }
+        
+        /* Gráficos - ajustar altura */
+        [id^="chart"] {
+            height: auto !important;
+        }
+    </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
