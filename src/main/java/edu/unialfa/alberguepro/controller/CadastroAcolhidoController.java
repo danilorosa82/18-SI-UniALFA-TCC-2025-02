@@ -25,6 +25,7 @@ public class CadastroAcolhidoController {
     public String iniciar(Model model) {
         model.addAttribute("acolhido", new CadastroAcolhido());
         carregarListas(model);
+        model.addAttribute("stepWithError", 1);
         return "cadastroAcolhido/form";
     }
 
@@ -73,15 +74,18 @@ public class CadastroAcolhidoController {
             }
         }
 
+        String cpfLimpo = null;
         if (acolhido.getCpf() == null || acolhido.getCpf().trim().isEmpty()) {
             result.rejectValue("cpf", "campo.obrigatorio", "O CPF é obrigatório.");
         } else {
-            String cpfLimpo = acolhido.getCpf().replaceAll("\\D", "");
+            cpfLimpo = acolhido.getCpf().replaceAll("\\D", "");
 
             if (!cpfLimpo.matches("\\d{11}")) {
                 result.rejectValue("cpf", "cpf.invalido", "O CPF informado é inválido. Deve ter exatamente 11 números.");
             } else if (!isCpfValido(cpfLimpo)) {
                 result.rejectValue("cpf", "cpf.invalido", "O CPF informado é inválido.");
+            } else if (acolhido.getId() == null && service.cpfJaExiste(cpfLimpo)) {
+                result.rejectValue("cpf", "cpf.duplicado", "CPF já existente no sistema.");
             }
         }
 
@@ -247,57 +251,31 @@ public class CadastroAcolhidoController {
         }
 
         if (result.hasErrors()) {
-            int stepComErro = 1;
+            int stepWithError = determinarStepComErro(result);
 
+            model.addAttribute("stepWithError", stepWithError);
 
-            if (result.hasFieldErrors("nome") || result.hasFieldErrors("dataNascimento") ||
-                    result.hasFieldErrors("naturalidade") || result.hasFieldErrors("sexo") ||
-                    result.hasFieldErrors("cor") || result.hasFieldErrors("rg") ||
-                    result.hasFieldErrors("cpf") || result.hasFieldErrors("certidaoNascimento") ||
-                    result.hasFieldErrors("filiacao")) {
-                stepComErro = 1;
-            }
-            else if (result.hasFieldErrors("estadoCivil") || result.hasFieldErrors("nomeConjuge") ||
-                    result.hasFieldErrors("filho") || result.hasFieldErrors("quantidadeFilhos")) {
-                stepComErro = 2;
-            }
-            else if (result.hasFieldErrors("endereco") ) {
-                stepComErro = 3;
-            }
-            else if (result.hasFieldErrors("escolaridade") || result.hasFieldErrors("renda") ||
-                    result.hasFieldErrors("beneficioSocial") || result.hasFieldErrors("qualBeneficio")) {
-                stepComErro = 4;
-            }
-            else if (result.hasFieldErrors("estadoSaude") || result.hasFieldErrors("possuiAlergia") ||
-                    result.hasFieldErrors("qualAlergia") || result.hasFieldErrors("fumante") ||
-                    result.hasFieldErrors("bebidaAlcoolica") || result.hasFieldErrors("usaDrogas") ||
-                    result.hasFieldErrors("qualDroga") || result.hasFieldErrors("medicamentoControlado") ||
-                    result.hasFieldErrors("qualMedicamento") || result.hasFieldErrors("doencaSexualmentetransmissivel")) {
-                stepComErro = 5;
-            }
-            else if (result.hasFieldErrors("situacaoRua") || result.hasFieldErrors("tempoRua") ||
-                    result.hasFieldErrors("vinculoFamiliar") || result.hasFieldErrors("cidadeVinculoFamiliar") ||
-                    result.hasFieldErrors("vinculoFamiliarQuem") || result.hasFieldErrors("servicoAcolhimento") ||
-                    result.hasFieldErrors("vezesAcolhido") || result.hasFieldErrors("ultimaCidadeQueEsteve") ||
-                    result.hasFieldErrors("tempoUltimaCidade") || result.hasFieldErrors("objetivoAcolhimento") ||
-                    result.hasFieldErrors("dataIngresso") || result.hasFieldErrors("dataSaida")) {
-                stepComErro = 6;
-            }
-
-            model.addAttribute("stepComErro", stepComErro);
             carregarListas(model);
             return "cadastroAcolhido/form";
         }
 
+        acolhido.setCpf(cpfLimpo);
         service.salvar(acolhido);
-        redirectAttributes.addFlashAttribute("mensagemSucesso", "Dados salvos com sucesso!");
         return "redirect:/cadastroAcolhido/listar";
     }
 
     @GetMapping("listar")
-    public String listar(Model model) {
-        List<CadastroAcolhido> acolhidos = service.listarTodos();
+    public String listar(@RequestParam(required = false) String filtro, Model model) {
+        List<CadastroAcolhido> acolhidos;
+
+        if (filtro != null && !filtro.trim().isEmpty()) {
+            acolhidos = service.buscarPorNome(filtro);
+        } else {
+            acolhidos = service.listarTodos();
+        }
+
         model.addAttribute("acolhidos", acolhidos);
+        model.addAttribute("filtro", filtro);
         return "cadastroAcolhido/lista";
     }
 
@@ -359,4 +337,45 @@ public class CadastroAcolhidoController {
         }
     }
 
+    private int determinarStepComErro(BindingResult result) {
+        if (result.hasFieldErrors("nome") || result.hasFieldErrors("dataNascimento")
+                || result.hasFieldErrors("idade") || result.hasFieldErrors("naturalidade")
+                || result.hasFieldErrors("sexo") || result.hasFieldErrors("cor")
+                || result.hasFieldErrors("rg") || result.hasFieldErrors("cpf")
+                || result.hasFieldErrors("certidaoNascimento") || result.hasFieldErrors("filiacao")) {
+            return 1;
+        }
+
+        if (result.hasFieldErrors("estadoCivil") || result.hasFieldErrors("nomeConjuge")
+                || result.hasFieldErrors("filho") || result.hasFieldErrors("quantidadeFilhos")) {
+            return 2;
+        }
+
+        if (result.hasFieldErrors("endereco")) {
+            return 3;
+        }
+
+        if (result.hasFieldErrors("escolaridade") || result.hasFieldErrors("renda")
+                || result.hasFieldErrors("beneficioSocial") || result.hasFieldErrors("qualBeneficio")) {
+            return 4;
+        }
+
+        if (result.hasFieldErrors("estadoSaude") || result.hasFieldErrors("medicamentoControlado")
+                || result.hasFieldErrors("qualMedicamento") || result.hasFieldErrors("doencaSexualmentetransmissivel")
+                || result.hasFieldErrors("possuiAlergia") || result.hasFieldErrors("qualAlergia")
+                || result.hasFieldErrors("fumante") || result.hasFieldErrors("bebidaAlcoolica")
+                || result.hasFieldErrors("usaDrogas") || result.hasFieldErrors("qualDroga")) {
+            return 5;
+        }
+
+        if (result.hasFieldErrors("situacaoRua") || result.hasFieldErrors("tempoRua")
+                || result.hasFieldErrors("vinculoFamiliar") || result.hasFieldErrors("vinculoFamiliarQuem")
+                || result.hasFieldErrors("cidadeVinculoFamiliar") || result.hasFieldErrors("servicoAcolhimento")
+                || result.hasFieldErrors("vezesAcolhido") || result.hasFieldErrors("ultimaCidadeQueEsteve")
+                || result.hasFieldErrors("tempoUltimaCidade") || result.hasFieldErrors("objetivoAcolhimento")
+                || result.hasFieldErrors("dataIngresso") || result.hasFieldErrors("dataSaida")) {
+            return 6;
+        }
+        return 1;
+    }
 }
