@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -150,8 +151,15 @@ public class EstoqueController {
     }
 
     @PostMapping("/dar-baixa")
-    public String processarBaixaIndividual(@RequestParam("produtoId") Long produtoId, @RequestParam("quantidade") Integer quantidade) {
-        estoqueService.darBaixa(produtoId, quantidade);
+    public String processarBaixaIndividual(@RequestParam("produtoId") Long produtoId, 
+            @RequestParam("quantidade") Integer quantidade,
+            RedirectAttributes redirectAttributes) {
+        try {
+            estoqueService.darBaixa(produtoId, quantidade);
+            redirectAttributes.addFlashAttribute("mensagemSucesso", "Baixa realizada com sucesso!");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("mensagemErro", e.getMessage());
+        }
         return "redirect:/estoque/baixa";
     }
 
