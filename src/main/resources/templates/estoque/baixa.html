@@ -7,13 +7,11 @@
 </head>
 <body>
 <section>
-    <!-- Alerta de erro, só aparece se o controller mandar a 'errorMessage' -->
-    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
-        <span th:text="${errorMessage}">Erro ao registrar baixa no estoque.</span>
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
+    <!-- Mensagem de erro -->
+    <div th:if="${mensagemErro}" th:text="${mensagemErro}" class="text-danger mb-3"></div>
+    
+    <!-- Mensagem de sucesso -->
+    <div th:if="${mensagemSucesso}" th:text="${mensagemSucesso}" class="text-success mb-3"></div>
 
     <div class="card card-primary">
         <div class="card-header card-header-blue">
