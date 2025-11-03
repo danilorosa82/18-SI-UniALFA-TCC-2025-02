@@ -302,6 +302,14 @@
         [id^="chart"] {
             height: auto !important;
         }
+        /* Toasts */
+        .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 1060; width: 320px; }
+        .toast-msg { display:flex; align-items:center; gap:.5rem; padding:.6rem .9rem; margin-bottom:.5rem; border-radius:.25rem; box-shadow:0 4px 12px rgba(0,0,0,.15); color:#fff; opacity:.98; }
+        .toast-msg.success { background:#28a745; }
+        .toast-msg.error { background:#dc3545; }
+        .toast-msg.info { background:#17a2b8; }
+        .toast-msg.warning { background:#ffc107; color:#212529; }
+        .toast-msg .close { background:transparent; border:0; color:inherit; font-size:1.1rem; line-height:1; margin-left:auto; }
     </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -481,7 +489,7 @@
                     <!-- Item do menu: Usuários -->
                     <li class="nav-item">
                         <a th:href="@{/admin/usuarios}" class="nav-link">
-                            <i class="nav-icon fas fa-users"></i>
+                            <i class="fas fa-user-alt"></i>
                             <p>Gerenciar Usuários</p>
                         </a>
                     </li>

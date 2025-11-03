@@ -105,6 +105,7 @@ public class EstoqueController {
         // Verifica todos os erros de validação
         if (result.hasErrors()) {
             carregarUnidades(model);
+            model.addAttribute("errorMessage", "Há problemas em um dos campos preenchidos, verifique e corrija.");
             return "estoque/form";
         }
 
@@ -113,6 +114,7 @@ public class EstoqueController {
         if (unidadeOptional.isEmpty()) {    
             result.rejectValue("unidadeId", "error.produto", "Unidade selecionada é inválida.");
             carregarUnidades(model);
+            model.addAttribute("errorMessage", "Há problemas em um dos campos preenchidos, verifique e corrija.");
             return "estoque/form";
         }
         produto.setUnidade(unidadeOptional.get());
@@ -156,9 +158,9 @@ public class EstoqueController {
             RedirectAttributes redirectAttributes) {
         try {
             estoqueService.darBaixa(produtoId, quantidade);
-            redirectAttributes.addFlashAttribute("mensagemSucesso", "Baixa realizada com sucesso!");
+            redirectAttributes.addFlashAttribute("successMessage", "Baixa realizada com sucesso!");
         } catch (IllegalArgumentException | IllegalStateException e) {
-            redirectAttributes.addFlashAttribute("mensagemErro", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/estoque/baixa";
     }

@@ -64,6 +64,7 @@ public class VagaController {
 
         if (result.hasErrors()) {
             addCommonAttributes(model);
+            model.addAttribute("errorMessage", "Há problemas em um dos campos preenchidos, verifique e corrija.");
             return "vaga/form";
         }
 
