@@ -3,19 +3,26 @@ package edu.unialfa.alberguepro.controller;
 import edu.unialfa.alberguepro.model.ControlePatrimonio;
 import edu.unialfa.alberguepro.repository.QuartoRepository;
 import edu.unialfa.alberguepro.model.Quarto;
+import edu.unialfa.alberguepro.repository.VagaRepository;
 import edu.unialfa.alberguepro.service.QuartoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/quarto")
+@Slf4j
 public class QuartoController {
 
+    @Autowired
+    private VagaRepository vagaRepository;
 
     @Autowired
     private QuartoRepository quartoRepository;
@@ -44,9 +51,32 @@ public class QuartoController {
 
     }
 
+    private void adicionarContagemDeLeitosOcupados(Model model) {
+
+        List<Object[]> contagemLeitos = vagaRepository.countOccupiedBedsByRoom();
+
+        // 💡 DEBUG: Imprima o resultado da consulta SQL
+        log.info("Resultado da contagem de leitos ocupados (Quarto / Qtd):");
+        for (Object[] resultado : contagemLeitos) {
+            log.info("Quarto: {} | Ocupados: {}", resultado[0], resultado[1]);
+        }
+        // FIM DEBUG
+
+        Map<String, Long> leitosOcupadosPorQuarto = contagemLeitos.stream()
+                .collect(Collectors.toMap(
+
+                        array -> (String) array[0],
+
+                        array -> (Long) array[1]
+                ));
+
+        model.addAttribute("leitosOcupadosPorQuarto", leitosOcupadosPorQuarto);
+    }
+
     @GetMapping("/listar")
     public String listarquartos(Model model) {
         model.addAttribute("quartos", quartoRepository.findAll());
+        adicionarContagemDeLeitosOcupados(model);
         return "Quarto/index";
     }
 
@@ -58,14 +88,15 @@ public class QuartoController {
 
     @GetMapping("/pesquisar")
     public String pesquisaForm(@RequestParam(value = "filtro", required = false) String filtro, Model model) {
-        List<Quarto> quarto;
+        List<Quarto> quartos;
         if (filtro != null && !filtro.isEmpty()) {
-            quarto = quartoRepository.findByNumeroQuartoContainingIgnoreCase(filtro);
+            quartos = quartoRepository.findByNumeroQuartoContainingIgnoreCase(filtro);
         } else {
-            quarto = quartoRepository.findAll();
+            quartos = quartoRepository.findAll();
         }
-        model.addAttribute("quartos", quarto);
+        model.addAttribute("quartos", quartos);
         model.addAttribute("filtro", filtro);
+        adicionarContagemDeLeitosOcupados(model);
         return "Quarto/index";
     }
 

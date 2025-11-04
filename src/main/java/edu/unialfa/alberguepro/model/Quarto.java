@@ -26,7 +26,7 @@ public class Quarto {
     @OneToMany(mappedBy = "quarto",
             cascade = CascadeType.ALL,
             orphanRemoval = true,
-            fetch = FetchType.LAZY)
+            fetch = FetchType.EAGER)
 
     private List<Leito> leitos = new ArrayList<>();
 

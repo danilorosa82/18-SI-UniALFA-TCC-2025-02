@@ -3,6 +3,7 @@ package edu.unialfa.alberguepro.repository;
 import edu.unialfa.alberguepro.model.Vaga;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,9 +12,17 @@ public interface VagaRepository extends JpaRepository<Vaga, Long>  {
     long countByAcolhidoIsNotNullAndDataSaidaIsNull();
     long countByAcolhidoIsNull();
 
+    @Query("SELECT COUNT(v) " +
+            "FROM Vaga v " +
+            "WHERE v.leito.quarto.id = :quartoId " +
+            "  AND v.acolhido IS NOT NULL " +
+            "  AND CURRENT_DATE BETWEEN v.dataEntrada AND v.dataSaida")
+    Long countActiveVagasByQuartoId(@Param("quartoId") Long quartoId);
+
     @Query("SELECT v.leito.quarto.numeroQuarto, COUNT(v) " +
             "FROM Vaga v " +
-            "WHERE v.acolhido IS NOT NULL AND v.dataSaida IS NULL " +
+            "WHERE v.acolhido IS NOT NULL " +
+            "  AND CURRENT_DATE BETWEEN v.dataEntrada AND v.dataSaida " +
             "GROUP BY v.leito.quarto.numeroQuarto")
     List<Object[]> countOccupiedBedsByRoom();
 
