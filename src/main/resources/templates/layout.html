@@ -195,6 +195,7 @@
             padding: 0.55rem 0.8rem !important;
             display: flex !important;
             align-items: center !important;
+            justify-content: space-between !important;
         }
         
         body:not(.sidebar-collapse) .nav-sidebar .nav-link .nav-icon {
@@ -229,15 +230,39 @@
             width: 1.4rem !important;
         }
         
-        /* Setas de dropdown - garantir que apareçam */
-        .nav-sidebar .nav-link .right {
+        /* Setas de dropdown - FORÇAR VISIBILIDADE COM ESPECIFICIDADE MÁXIMA */
+        body:not(.sidebar-collapse) .nav-sidebar .nav-item .nav-link .right,
+        body:not(.sidebar-collapse) .nav-sidebar .nav-item .nav-link p .right,
+        body:not(.sidebar-collapse) .sidebar .nav-sidebar .nav-link .right,
+        body:not(.sidebar-collapse) [data-widget="treeview"] .nav-link .right {
             font-size: 1rem !important;
             transition: transform 0.3s ease !important;
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            color: rgba(255, 255, 255, 0.8) !important;
+            margin-left: auto !important;
         }
         
-        /* Quando o menu está aberto */
-        .nav-item.menu-open > .nav-link .right {
+        /* Quando o menu está aberto - rotacionar seta */
+        body:not(.sidebar-collapse) .nav-item.menu-open > .nav-link .right,
+        body:not(.sidebar-collapse) .nav-item.menu-open > .nav-link p .right {
             transform: rotate(-90deg) !important;
+        }
+        
+        /* Garantir que o link use flexbox */
+        body:not(.sidebar-collapse) .nav-sidebar .nav-link {
+            display: flex !important;
+            align-items: center !important;
+        }
+        
+        /* Garantir que o parágrafo ocupe espaço disponível */
+        body:not(.sidebar-collapse) .nav-sidebar .nav-link p {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            width: 100% !important;
+            margin: 0 !important;
         }
         
         .brand-link {

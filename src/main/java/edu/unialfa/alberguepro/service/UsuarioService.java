@@ -2,6 +2,8 @@ package edu.unialfa.alberguepro.service;
 
 import edu.unialfa.alberguepro.model.Usuario;
 import edu.unialfa.alberguepro.repository.UsuarioRepository;
+import net.sf.jasperreports.engine.*;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -9,6 +11,9 @@ import org.springframework.stereotype.Service;
 import edu.unialfa.alberguepro.dto.UsuarioDTO;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;

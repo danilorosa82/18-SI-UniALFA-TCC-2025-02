@@ -3,8 +3,14 @@ package edu.unialfa.alberguepro.controller;
 import edu.unialfa.alberguepro.dto.UsuarioDTO;
 import edu.unialfa.alberguepro.model.Usuario;
 import edu.unialfa.alberguepro.service.UsuarioService;
+import edu.unialfa.alberguepro.service.RelatorioUsuarioPatrimonioService;
 
+import net.sf.jasperreports.engine.JRException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -14,7 +20,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +27,7 @@ import edu.unialfa.alberguepro.repository.UsuarioRepository;
 
 import jakarta.validation.Valid;
 
+import java.io.ByteArrayInputStream;
 import java.util.Optional;
 
 @Controller
@@ -33,6 +39,9 @@ public class UsuarioController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+    
+    @Autowired
+    private RelatorioUsuarioPatrimonioService relatorioService;
 
     @GetMapping
     public String listarUsuarios(Model model) {
