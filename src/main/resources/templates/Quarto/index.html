@@ -42,14 +42,23 @@
                 <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Número do Quarto</th>
-                    <th>Ações</th>
+                    <th>Número do Quarto</th> <th>Ocupação (Ocupados/Total)</th> <th>Ações</th>
                 </tr>
                 </thead>
                 <tbody>
                 <tr th:each="quarto : ${quartos}">
                     <td th:text="${quarto.id}"></td>
+
                     <td th:text="${quarto.numeroQuarto}"></td>
+
+                    <td>
+                <span class="badge badge-info"
+                      th:with="ocupados=${leitosOcupadosPorQuarto[quarto.numeroQuarto] ?: 0},
+                               total=${#lists.size(quarto.leitos)}"
+                      th:text="${ocupados} + '/' + ${total}">
+                </span>
+                    </td>
+
                     <td>
                         <a th:href="@{/quarto/remover/{id}(id=${quarto.id})}" class="btn btn-danger btn-sm">
                             <i class="fas fa-trash"></i>

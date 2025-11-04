@@ -6,6 +6,7 @@
 </head>
 <body>
 <section>
+
     <div class="card card-primary">
         <div class="card-header">
             <h3 class="card-title">Gestão de Vagas - Cadastrar</h3>
@@ -40,6 +41,9 @@
                                 th:selected="${quartoSelecionadoId != null and quartoSelecionadoId == q.id}">
                         </option>
                     </select>
+                    <div th:if="${#fields.hasErrors('leito')}" class="text-danger">
+                        O quarto é obrigatório.
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -63,6 +67,20 @@
                     <div th:if="${#fields.hasErrors('dataSaida')}" th:errors="*{dataSaida}" class="text-danger"></div>
                 </div>
 
+                <div th:if="${mensagemSucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${mensagemSucesso}">Sucesso ao salvar!</span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div th:if="${mensagemErro}" id="mensagemErroMaxVaga" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${mensagemErro}">Erro ao salvar a vaga.</span>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
                 <div class="card-footer">
                     <button type="submit" class="btn btn-primary">Salvar</button>
                     <a th:href="@{/vaga/listar}" class="btn btn-secondary">Cancelar</a>
@@ -75,6 +93,12 @@
     /*<![CDATA[*/
 
     document.addEventListener('DOMContentLoaded', function() {
+     const erroDiv = document.getElementById('mensagemErroMaxVaga');
+
+     if (erroDiv) {
+         erroDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+     }
+
         const quartoSelect = document.getElementById('quarto');
         const leitoSelect = document.getElementById('leito');
 
