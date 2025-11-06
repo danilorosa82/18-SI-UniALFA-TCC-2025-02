@@ -28,7 +28,9 @@ public class Produto {
     @JoinColumn(name = "unidade_id")
     private Unidade unidade;
 
-    @NotNull(message = "A data de vencimento é obrigatória.")
+    @Column(name = "nao_perecivel", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean naoPerecivel = false;
+
     @Future(message = "A data de vencimento deve ser uma data futura.")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate dataDeVencimento;
@@ -88,5 +90,13 @@ public class Produto {
 
     public void setUnidadeId(Long unidadeId) {
         this.unidadeId = unidadeId;
+    }
+
+    public Boolean getNaoPerecivel() {
+        return naoPerecivel;
+    }
+
+    public void setNaoPerecivel(Boolean naoPerecivel) {
+        this.naoPerecivel = naoPerecivel;
     }
 }
