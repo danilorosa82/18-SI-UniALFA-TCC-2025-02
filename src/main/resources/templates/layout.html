@@ -327,6 +327,65 @@
         [id^="chart"] {
             height: auto !important;
         }
+        
+        /* ===== RESPONSIVIDADE MOBILE ===== */
+        @media (max-width: 768px) {
+            /* Remover margens fixas do content-wrapper em mobile */
+            body:not(.sidebar-collapse) .content-wrapper,
+            body:not(.sidebar-collapse) .main-footer,
+            body:not(.sidebar-collapse) .main-header {
+                margin-left: 0 !important;
+            }
+            
+            body.sidebar-collapse .content-wrapper,
+            body.sidebar-collapse .main-footer,
+            body.sidebar-collapse .main-header {
+                margin-left: 0 !important;
+            }
+            
+            /* Sidebar oculta por padrão em mobile */
+            .main-sidebar {
+                margin-left: -220px !important;
+            }
+            
+            /* Quando sidebar está aberta em mobile */
+            body:not(.sidebar-collapse) .main-sidebar {
+                margin-left: 0 !important;
+            }
+            
+            /* Responsividade para tabelas */
+            .table-responsive {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Melhorar legibilidade de small-boxes em mobile */
+            .small-box .inner h3 {
+                font-size: 1.8rem !important;
+            }
+            
+            .small-box .inner p {
+                font-size: 0.85rem !important;
+            }
+            
+            /* Ajustar botões em mobile */
+            .btn {
+                padding: 0.4rem 0.8rem !important;
+                font-size: 0.85rem !important;
+            }
+            
+            /* Cards mais compactos */
+            .card-body {
+                padding: 0.75rem !important;
+            }
+            
+            .card-header {
+                padding: 0.5rem 0.75rem !important;
+            }
+        }
+        
         /* Toasts */
         .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 1060; width: 320px; }
         .toast-msg { display:flex; align-items:center; gap:.5rem; padding:.6rem .9rem; margin-bottom:.5rem; border-radius:.25rem; box-shadow:0 4px 12px rgba(0,0,0,.15); color:#fff; opacity:.98; }
@@ -599,7 +658,7 @@ $(document).ready(function() {
                         window.location.href = '/patrimonio';
                         return false;
                     });
-                } else if ($icon.hasClass('fa-users')) {
+                } else if ($icon.hasClass('fa-id-card')) {
                     // Acolhido
                     $link.off('click').on('click', function(e) {
                         e.preventDefault();

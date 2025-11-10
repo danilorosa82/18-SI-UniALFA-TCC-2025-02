@@ -86,7 +86,8 @@
                 </div>
 
                 <!-- A tabela só aparece se tiver produto na lista -->
-                <table class="table table-bordered" th:if="${not #lists.isEmpty(produtos)}">
+                <div class="table-responsive">
+                    <table class="table table-bordered" th:if="${not #lists.isEmpty(produtos)}">
                     <thead class="thead-blue">
                         <tr>
                             <th>Nome</th>
@@ -120,10 +121,11 @@
                                 <a th:href="@{/estoque/editar/{id}(id=${produto.id})}" class="btn btn-warning btn-sm">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                </td>
+                            </td>
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </section>

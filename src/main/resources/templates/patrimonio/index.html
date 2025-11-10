@@ -105,7 +105,8 @@
                 </div>
 
                 <!-- A tabela só aparece se tiver produto na lista -->
-                <table class="table table-bordered" th:if="${not #lists.isEmpty(patrimonios)}">
+                <div class="table-responsive">
+                    <table class="table table-bordered" th:if="${not #lists.isEmpty(patrimonios)}">
                     <thead class="thead-blue">
                         <tr>
                             <th>Nome</th>
@@ -126,10 +127,9 @@
                             <td th:text="${patrimonio.nome}"></td>
                             <td th:text="${patrimonio.patrimonio}"></td>
                             <td th:text="${patrimonio.status}"></td>
-                            <td th:text="${patrimonio.data_aquisicao}"></td>
+                            <td th:text="${#temporals.format(patrimonio.data_aquisicao, 'dd/MM/yyyy')}"></td>
                             <td th:text="${patrimonio.local_atual}"></td>
                             <td th:text="${patrimonio.observacao}"></td>
-                                <!-- Botão pra editar o produto -->
                             <td>
                                 <a th:href="@{/patrimonio/editar/{id}(id=${patrimonio.id})}" class="btn btn-warning btn-sm">
                                     <i class="fas fa-edit"></i>
@@ -138,6 +138,7 @@
                         </tr>
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     </section>
