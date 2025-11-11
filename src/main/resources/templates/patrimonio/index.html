@@ -95,6 +95,9 @@
                         <a th:href="@{/relatorios/patrimonio/pdf(nome=${nome}, status=${status}, localAtual=${localAtual})}" class="btn btn-danger" target="_blank">
                             <i class="fas fa-file-pdf"></i> Gerar PDF
                         </a>
+                        <a th:href="@{/relatorios/patrimonio/excel(nome=${nome}, status=${status}, localAtual=${localAtual})}" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Gerar Excel
+                        </a>
                     </div>
                 </div>
             </div>
