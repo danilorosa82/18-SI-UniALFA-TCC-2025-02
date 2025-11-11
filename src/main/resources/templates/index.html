@@ -118,6 +118,12 @@
             return document.body.classList.contains('dark-mode') ? '#fff' : '#000';
         }
         
+        // Aplicar dark mode ANTES de criar os gráficos
+        const darkMode = localStorage.getItem('darkMode') === 'true';
+        if (darkMode && !document.body.classList.contains('dark-mode')) {
+            document.body.classList.add('dark-mode');
+        }
+        
         // Variáveis para armazenar as instâncias dos gráficos
         var chartPatrimonio, chartLeitos, chartEstoque, chartEvolucao;
         
