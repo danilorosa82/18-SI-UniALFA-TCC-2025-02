@@ -827,6 +827,9 @@ $(document).ready(function() {
         
         // Salvar preferência no localStorage
         localStorage.setItem('darkMode', isDarkMode);
+        
+        // Disparar evento customizado para atualizar gráficos
+        window.dispatchEvent(new Event('darkModeToggled'));
     });
 });
 </script>

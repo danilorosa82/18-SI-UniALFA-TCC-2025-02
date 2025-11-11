@@ -113,6 +113,14 @@
 </section>
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
+        // Função para obter cor de texto baseado no modo
+        function getDataLabelColor() {
+            return document.body.classList.contains('dark-mode') ? '#fff' : '#000';
+        }
+        
+        // Variáveis para armazenar as instâncias dos gráficos
+        var chartPatrimonio, chartLeitos, chartEstoque, chartEvolucao;
+        
         // Dados do Patrimônio
         var patrimonioData = /*[[${dashboard.patrimonioPorStatus}]]*/ {};
         
@@ -176,7 +184,7 @@
                     style: {
                         fontSize: '12px',
                         fontWeight: 'bold',
-                        colors: ['#fff']
+                        colors: [getDataLabelColor()]
                     },
                     dropShadow: {
                         enabled: false
@@ -262,7 +270,7 @@
                 style: {
                     fontSize: '13px',
                     fontWeight: 'bold',
-                    colors: ['#fff']
+                    colors: [getDataLabelColor()]
                 }
             },
             xaxis: {
@@ -354,7 +362,7 @@
                     style: {
                         fontSize: '11px',
                         fontWeight: 'bold',
-                        colors: ['#fff']
+                        colors: [getDataLabelColor()]
                     }
                 },
                 xaxis: {
@@ -504,6 +512,44 @@
         
         var chartEvolucao = new ApexCharts(document.querySelector("#chartEvolucao"), optionsEvolucao);
         chartEvolucao.render();
+        
+        // Atualizar cores dos gráficos quando alternar dark mode
+        window.addEventListener('darkModeToggled', function() {
+            const newColor = getDataLabelColor();
+            
+            // Atualizar gráfico de Patrimônio
+            if (chartPatrimonio && typeof chartPatrimonio.updateOptions === 'function') {
+                chartPatrimonio.updateOptions({
+                    dataLabels: {
+                        style: {
+                            colors: [newColor]
+                        }
+                    }
+                });
+            }
+            
+            // Atualizar gráfico de Leitos
+            if (chartLeitos && typeof chartLeitos.updateOptions === 'function') {
+                chartLeitos.updateOptions({
+                    dataLabels: {
+                        style: {
+                            colors: [newColor]
+                        }
+                    }
+                });
+            }
+            
+            // Atualizar gráfico de Estoque
+            if (chartEstoque && typeof chartEstoque.updateOptions === 'function') {
+                chartEstoque.updateOptions({
+                    dataLabels: {
+                        style: {
+                            colors: [newColor]
+                        }
+                    }
+                });
+            }
+        });
     });
 </script>
 </body>
