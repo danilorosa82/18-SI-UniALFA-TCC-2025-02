@@ -1,29 +1,33 @@
----
-steps:
-  - name: gcr.io/cloud-builders/mvn
-    args:
-      - clean
-      - install
-      - -U
-  - name: gcr.io/cloud-builders/docker
-    args:
-      - build
-      - -t
-      - us-central1-docker.pkg.dev/$PROJECT_ID/app-imagens/alberguepro:latest
-      - .
-  - name: gcr.io/cloud-builders/docker
-    args:
-      - push
-      - us-central1-docker.pkg.dev/$PROJECT_ID/app-imagens/alberguepro:latest
-  - name: gcr.io/google/cloud-sdk
-    entrypoint: gcloud
-    args:
-      - run
-      - deploy
-      - alberguepro
-      - --image=us-central1-docker.pkg.dev/$PROJECT_ID/app-imagens/alberguepro:latest
-      - --region=us-central1
-      - --platform=managed
-images:
-  - us-central1-docker.pkg.dev/$PROJECT_ID/app-imagens/alberguepro:latest
-timeout: 900s
+name: Deploy no Cloud Build
+
+on:
+  push:
+    branches:
+      - main # Ou a branch que você usa
+
+jobs:
+  build-e-deploy:
+    name: Build e Deploy no Google Cloud
+    runs-on: ubuntu-latest
+    
+    # Adicione permissões para autenticar com o Google Cloud
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Autentica no Google Cloud
+    - name: Autenticar com Google Cloud
+      uses: 'google-github-actions/auth@v2'
+      with:
+        # Você precisa configurar o "Workload Identity Federation" no seu projeto GCP
+        workload_identity_provider: 'projects/SEU_PROJECT_NUMBER/locations/global/workloadIdentityPools/SEU_POOL/providers/SEU_PROVIDER'
+        service_account: 'SEU_SERVICE_ACCOUNT_EMAIL@.iam.gserviceaccount.com'
+
+    # Envia o arquivo cloudbuild.yaml para o Google executar
+    - name: Executar Cloud Build
+      run: |-
+        gcloud builds submit --config cloudbuild.yaml
