@@ -448,6 +448,51 @@
             background: #a16207 !important;
             color: #fef3c7 !important;
         }
+        
+        /* Navbar superior em dark mode */
+        body.dark-mode .main-header {
+            background-color: #1f2937 !important;
+            border-bottom: 1px solid #374151 !important;
+        }
+        
+        body.dark-mode .navbar-light .navbar-nav .nav-link {
+            color: #e5e7eb !important;
+        }
+        
+        body.dark-mode .navbar-light .navbar-nav .nav-link:hover {
+            color: #ffffff !important;
+        }
+        
+        /* Botões de relatório em dark mode - remover border branco */
+        body.dark-mode .card-header-blue .btn {
+            border-color: rgba(255, 255, 255, 0.3) !important;
+        }
+        
+        body.dark-mode .card-header-blue .btn:hover {
+            border-color: rgba(255, 255, 255, 0.5) !important;
+        }
+        
+        /* Ajustar cor de linhas de tabela com warning (produtos esgotados) */
+        .table-warning {
+            background-color: #fff3cd !important;
+            color: #856404 !important;
+        }
+        
+        body.dark-mode .table-warning {
+            background-color: #374151 !important;
+            color: #000000 !important;
+            border-left: 4px solid #f59e0b !important;
+        }
+        
+        body.dark-mode .table-warning td {
+            color: #000000 !important;
+            font-weight: 500 !important;
+        }
+        
+        body.dark-mode .table-warning .badge {
+            background-color: #dc2626 !important;
+            color: #ffffff !important;
+        }
     </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
@@ -782,6 +827,9 @@ $(document).ready(function() {
         
         // Salvar preferência no localStorage
         localStorage.setItem('darkMode', isDarkMode);
+        
+        // Disparar evento customizado para atualizar gráficos
+        window.dispatchEvent(new Event('darkModeToggled'));
     });
 });
 </script>

@@ -113,6 +113,30 @@
 </section>
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
+        // Função para obter cor de texto baseado no modo
+        function getDataLabelColor() {
+            return document.body.classList.contains('dark-mode') ? '#fff' : '#000';
+        }
+        
+        // Função para obter cor de labels/categorias baseado no modo
+        function getLabelColor() {
+            return document.body.classList.contains('dark-mode') ? '#e5e7eb' : '#6c757d';
+        }
+        
+        // Função para obter cor de títulos baseado no modo
+        function getTitleColor() {
+            return document.body.classList.contains('dark-mode') ? '#f3f4f6' : '#343a40';
+        }
+        
+        // Aplicar dark mode ANTES de criar os gráficos
+        const darkMode = localStorage.getItem('darkMode') === 'true';
+        if (darkMode && !document.body.classList.contains('dark-mode')) {
+            document.body.classList.add('dark-mode');
+        }
+        
+        // Variáveis para armazenar as instâncias dos gráficos
+        var chartPatrimonio, chartLeitos, chartEstoque, chartEvolucao;
+        
         // Dados do Patrimônio
         var patrimonioData = /*[[${dashboard.patrimonioPorStatus}]]*/ {};
         
@@ -162,6 +186,9 @@
                     position: 'bottom',
                     fontSize: '12px',
                     fontWeight: 500,
+                    labels: {
+                        colors: getLabelColor()
+                    },
                     markers: {
                         width: 10,
                         height: 10,
@@ -176,7 +203,7 @@
                     style: {
                         fontSize: '12px',
                         fontWeight: 'bold',
-                        colors: ['#fff']
+                        colors: [getDataLabelColor()]
                     },
                     dropShadow: {
                         enabled: false
@@ -192,20 +219,20 @@
                                     show: true,
                                     fontSize: '14px',
                                     fontWeight: 600,
-                                    color: '#343a40'
+                                    color: getTitleColor()
                                 },
                                 value: {
                                     show: true,
                                     fontSize: '20px',
                                     fontWeight: 700,
-                                    color: '#007bff'
+                                    color: document.body.classList.contains('dark-mode') ? '#60a5fa' : '#007bff'
                                 },
                                 total: {
                                     show: true,
                                     label: 'Total',
                                     fontSize: '12px',
                                     fontWeight: 600,
-                                    color: '#6c757d',
+                                    color: getLabelColor(),
                                     formatter: function (w) {
                                         return w.globals.seriesTotals.reduce((a, b) => a + b, 0)
                                     }
@@ -262,7 +289,7 @@
                 style: {
                     fontSize: '13px',
                     fontWeight: 'bold',
-                    colors: ['#fff']
+                    colors: [getDataLabelColor()]
                 }
             },
             xaxis: {
@@ -272,12 +299,12 @@
                     style: {
                         fontSize: '13px',
                         fontWeight: 600,
-                        color: '#343a40'
+                        color: getTitleColor()
                     }
                 },
                 labels: {
                     style: {
-                        colors: '#6c757d',
+                        colors: getLabelColor(),
                         fontSize: '11px'
                     }
                 }
@@ -285,7 +312,7 @@
             yaxis: {
                 labels: {
                     style: {
-                        colors: '#6c757d',
+                        colors: getLabelColor(),
                         fontSize: '12px',
                         fontWeight: 500
                     }
@@ -354,7 +381,7 @@
                     style: {
                         fontSize: '11px',
                         fontWeight: 'bold',
-                        colors: ['#fff']
+                        colors: [getDataLabelColor()]
                     }
                 },
                 xaxis: {
@@ -364,12 +391,12 @@
                         style: {
                             fontSize: '12px',
                             fontWeight: 600,
-                            color: '#343a40'
+                            color: getTitleColor()
                         }
                     },
                     labels: {
                         style: {
-                            colors: '#6c757d',
+                            colors: getLabelColor(),
                             fontSize: '11px'
                         }
                     }
@@ -377,7 +404,7 @@
                 yaxis: {
                     labels: {
                         style: {
-                            colors: '#6c757d',
+                            colors: getLabelColor(),
                             fontSize: '11px'
                         },
                         maxWidth: 120
@@ -451,12 +478,12 @@
                     style: {
                         fontSize: '12px',
                         fontWeight: 600,
-                        color: '#343a40'
+                        color: getTitleColor()
                     }
                 },
                 labels: {
                     style: {
-                        colors: '#6c757d',
+                        colors: getLabelColor(),
                         fontSize: '11px'
                     }
                 }
@@ -467,12 +494,12 @@
                     style: {
                         fontSize: '12px',
                         fontWeight: 600,
-                        color: '#343a40'
+                        color: getTitleColor()
                     }
                 },
                 labels: {
                     style: {
-                        colors: '#6c757d',
+                        colors: getLabelColor(),
                         fontSize: '11px'
                     }
                 }
@@ -482,6 +509,9 @@
                 horizontalAlign: 'center',
                 fontSize: '12px',
                 fontWeight: 500,
+                labels: {
+                    colors: getLabelColor()
+                },
                 markers: {
                     width: 10,
                     height: 10,
@@ -504,6 +534,142 @@
         
         var chartEvolucao = new ApexCharts(document.querySelector("#chartEvolucao"), optionsEvolucao);
         chartEvolucao.render();
+        
+        // Atualizar cores dos gráficos quando alternar dark mode
+        window.addEventListener('darkModeToggled', function() {
+            const newColor = getDataLabelColor();
+            const newLabelColor = getLabelColor();
+            const newTitleColor = getTitleColor();
+            const newValueColor = document.body.classList.contains('dark-mode') ? '#60a5fa' : '#007bff';
+            
+            // Atualizar gráfico de Patrimônio
+            if (chartPatrimonio && typeof chartPatrimonio.updateOptions === 'function') {
+                chartPatrimonio.updateOptions({
+                    dataLabels: {
+                        style: {
+                            colors: [newColor]
+                        }
+                    },
+                    legend: {
+                        labels: {
+                            colors: newLabelColor
+                        }
+                    },
+                    plotOptions: {
+                        pie: {
+                            donut: {
+                                labels: {
+                                    name: {
+                                        color: newTitleColor
+                                    },
+                                    value: {
+                                        color: newValueColor
+                                    },
+                                    total: {
+                                        color: newLabelColor
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Atualizar gráfico de Leitos
+            if (chartLeitos && typeof chartLeitos.updateOptions === 'function') {
+                chartLeitos.updateOptions({
+                    dataLabels: {
+                        style: {
+                            colors: [newColor]
+                        }
+                    },
+                    xaxis: {
+                        title: {
+                            style: {
+                                color: newTitleColor
+                            }
+                        },
+                        labels: {
+                            style: {
+                                colors: newLabelColor
+                            }
+                        }
+                    },
+                    yaxis: {
+                        labels: {
+                            style: {
+                                colors: newLabelColor
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Atualizar gráfico de Estoque
+            if (chartEstoque && typeof chartEstoque.updateOptions === 'function') {
+                chartEstoque.updateOptions({
+                    dataLabels: {
+                        style: {
+                            colors: [newColor]
+                        }
+                    },
+                    xaxis: {
+                        title: {
+                            style: {
+                                color: newTitleColor
+                            }
+                        },
+                        labels: {
+                            style: {
+                                colors: newLabelColor
+                            }
+                        }
+                    },
+                    yaxis: {
+                        labels: {
+                            style: {
+                                colors: newLabelColor
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // Atualizar gráfico de Evolução
+            if (chartEvolucao && typeof chartEvolucao.updateOptions === 'function') {
+                chartEvolucao.updateOptions({
+                    xaxis: {
+                        title: {
+                            style: {
+                                color: newTitleColor
+                            }
+                        },
+                        labels: {
+                            style: {
+                                colors: newLabelColor
+                            }
+                        }
+                    },
+                    yaxis: {
+                        title: {
+                            style: {
+                                color: newTitleColor
+                            }
+                        },
+                        labels: {
+                            style: {
+                                colors: newLabelColor
+                            }
+                        }
+                    },
+                    legend: {
+                        labels: {
+                            colors: newLabelColor
+                        }
+                    }
+                });
+            }
+        });
     });
 </script>
 </body>
