@@ -16,14 +16,17 @@ public interface QuartoRepository extends JpaRepository<Quarto, Long> {
     Quarto findByNumeroQuartoAndIdNot(String numeroQuarto, Long id);
 
     @Query("SELECT COUNT(DISTINCT q.id) FROM Quarto q " +
-           "WHERE NOT EXISTS (" +
+           "WHERE EXISTS (" +
            "  SELECT 1 FROM Leito l " +
-           "  WHERE l.quarto = q " +
-           "  AND EXISTS (" +
+           "  WHERE l.quarto = q) " +
+           "AND EXISTS (" +
+           "  SELECT 1 FROM Leito l2 " +
+           "  WHERE l2.quarto = q " +
+           "  AND NOT EXISTS (" +
            "    SELECT 1 FROM Vaga v " +
-           "    WHERE v.leito = l " +
+           "    WHERE v.leito = l2 " +
            "    AND v.acolhido IS NOT NULL " +
-           "    AND v.dataSaida IS NULL))")
+           "    AND (v.dataSaida IS NULL OR v.dataSaida >= CURRENT_DATE)))")
     long countQuartosComLeitosLivres();
 
     @Query("SELECT COUNT(DISTINCT q.id) FROM Quarto q " +
@@ -34,6 +37,6 @@ public interface QuartoRepository extends JpaRepository<Quarto, Long> {
            "    SELECT 1 FROM Vaga v " +
            "    WHERE v.leito = l " +
            "    AND v.acolhido IS NOT NULL " +
-           "    AND v.dataSaida IS NULL))")
+           "    AND (v.dataSaida IS NULL OR v.dataSaida >= CURRENT_DATE)))")
     long countQuartosTotalmenteOcupados();
 }
