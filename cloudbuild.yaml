@@ -1,6 +1,6 @@
 steps:
   # 1. Build do Maven
-  - name: 'gcr.io/cloud-builders/mvn'
+  - name: 'maven:3-eclipse-temurin-21'
     args:
       - 'clean'
       - 'install'
