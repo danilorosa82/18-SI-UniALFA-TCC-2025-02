@@ -32,7 +32,6 @@ steps:
       - '--region=us-central1'
       - '--platform=managed'
 
-# O resto do arquivo permanece igual
 images:
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/app-imagens/alberguepro:latest'
 
