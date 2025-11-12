@@ -1,0 +1,29 @@
+---
+steps:
+  - name: gcr.io/cloud-builders/mvn
+    args:
+      - clean
+      - install
+      - -U
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - us-central1-docker.pkg.dev/$PROJECT_ID/app-imagens/alberguepro:latest
+      - .
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - us-central1-docker.pkg.dev/$PROJECT_ID/app-imagens/alberguepro:latest
+  - name: gcr.io/google/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - alberguepro
+      - --image=us-central1-docker.pkg.dev/$PROJECT_ID/app-imagens/alberguepro:latest
+      - --region=us-central1
+      - --platform=managed
+images:
+  - us-central1-docker.pkg.dev/$PROJECT_ID/app-imagens/alberguepro:latest
+timeout: 900s
