@@ -1,6 +1,7 @@
 steps:
   # 1. Build do Maven
-  - name: 'maven:3-eclipse-temurin-21'
+  - name: 'maven:3-amazoncorretto-21'
+    entrypoing: 'mvn'
     args:
       - 'clean'
       - 'install'
