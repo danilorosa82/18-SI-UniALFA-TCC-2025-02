@@ -8,7 +8,7 @@ steps:
       - '-U'
       
   # 2. Build da Imagem Docker
-  - name: 'us.gcr.io/google-appengine/cloud-build-builders/docker'
+  - name: 'us-central1-docker.pkg.dev/cloud-builders/docker'
     args:
       - 'build'
       - '-t'
@@ -16,13 +16,13 @@ steps:
       - '.'
       
   # 3. Push da Imagem
-  - name: 'us.gcr.io/google-appengine/cloud-build-builders/docker'
+  - name: 'us-central1-docker.pkg.dev/cloud-builders/docker'
     args:
       - 'push'
       - 'us-central1-docker.pkg.dev/$PROJECT_ID/app-imagens/alberguepro:latest'
       
-  # 4. Deploy no Cloud Run
-  - name: 'us.gcr.io/google-appengine/cloud-build-builders/gcloud'
+  # 4. Deploy no Cloud Ru
+  - name: 'us-central1-docker.pkg.dev/cloud-builders/gcloud'
     entrypoint: 'gcloud'
     args:
       - 'run'
@@ -32,6 +32,7 @@ steps:
       - '--region=us-central1'
       - '--platform=managed'
 
+# O resto do arquivo permanece igual
 images:
   - 'us-central1-docker.pkg.dev/$PROJECT_ID/app-imagens/alberguepro:latest'
 
