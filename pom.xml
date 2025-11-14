@@ -112,6 +112,14 @@
             <artifactId>h2</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Google Cloud -->
+
+        <dependency>
+            <groupId>com.google.cloud.sql</groupId>
+            <artifactId>spring-cloud-gcp-starter-sql-mysql</artifactId>
+            <version>4.10.0</version> 
+        </dependency>
     </dependencies>
 
     <build>
