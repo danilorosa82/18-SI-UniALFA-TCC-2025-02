@@ -76,7 +76,7 @@ public class UsuarioService {
     }
 
     @Transactional
-    public void toggleAtivo(Long id) {
+    public boolean toggleAtivo(Long id) {
         String usernameLogado = SecurityContextHolder.getContext().getAuthentication().getName();
 
         Usuario usuario = usuarioRepository.findById(id)
@@ -92,6 +92,9 @@ public class UsuarioService {
 
         // Salva a alteração no banco de dados
         usuarioRepository.save(usuario);
+        
+        // Retorna o novo status
+        return usuario.isAtivo();
     }
 
     public List<UsuarioDTO> findAllDTO() {
