@@ -37,7 +37,7 @@
 
                 <div class="form-group">
                     <label for="numeroQuarto" class="form-label">Número do Quarto:</label>
-                    <input type="text" id="numeroQuarto" class="form-control" th:field="*{numeroQuarto}" required>
+                    <input type="text" id="numeroQuarto" class="form-control" th:field="*{numeroQuarto}">
                     <div th:if="${mensagemErro}" th:text="${mensagemErro}" class="text-danger"></div>
                 </div>
 

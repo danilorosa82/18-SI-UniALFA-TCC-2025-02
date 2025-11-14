@@ -45,7 +45,30 @@ public class ControlePatrimonioController {
             return mv;
         }
 
-        // Salva o patrimônio no banco se não houver erros
+        ControlePatrimonio patrimonioExistente = null;
+        String numeroPatrimonio = controlePatrimonio.getPatrimonio();
+
+        if (controlePatrimonio.getId() == null) {
+            // Novo cadastro
+            patrimonioExistente = controlePatrimonioRepository.findByPatrimonio(numeroPatrimonio);
+        } else {
+            // Edição
+            patrimonioExistente = controlePatrimonioRepository.findByPatrimonioAndIdNot(
+                    numeroPatrimonio,
+                    controlePatrimonio.getId()
+            );
+        }
+
+        if (patrimonioExistente != null) {
+
+            result.rejectValue("patrimonio", "patrimonio.duplicado",
+                    "O número de patrimônio '" + numeroPatrimonio + "' já está cadastrado. Por favor, utilize um número único.");
+
+            ModelAndView mv = new ModelAndView("patrimonio/form");
+            mv.addObject("errorMessage", "Erro de Validação: O número de patrimônio já existe.");
+            return mv;
+        }
+
         controlePatrimonioRepository.save(controlePatrimonio);
         return new ModelAndView("redirect:/patrimonio");
     }
@@ -66,7 +89,7 @@ public class ControlePatrimonioController {
     public String pesquisaForm(@RequestParam(value = "filtro", required = false) String filtro, Model model) {
         List<ControlePatrimonio> controlePatrimonios;
         if (filtro != null && !filtro.isEmpty()) {
-            controlePatrimonios = controlePatrimonioRepository.findByNomeContainingIgnoreCase(filtro);
+            controlePatrimonios = controlePatrimonioRepository.findByPatrimonioContainingIgnoreCase(filtro);
         } else {
             controlePatrimonios = controlePatrimonioRepository.findAll();
         }

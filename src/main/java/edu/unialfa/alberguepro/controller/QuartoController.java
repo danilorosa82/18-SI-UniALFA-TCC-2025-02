@@ -81,8 +81,17 @@ public class QuartoController {
     }
 
     @GetMapping("remover/{id}")
-    public String remover(@PathVariable Long id) {
-        service.deletarPorId(id);
+    public String remover(@PathVariable Long id, RedirectAttributes attributes) {
+        try {
+            service.deletarPorId(id);
+            attributes.addFlashAttribute("successMessage", "Quarto excluído com sucesso!");
+        } catch (IllegalArgumentException e) {
+            attributes.addFlashAttribute("errorMessage", e.getMessage());
+        } catch (Exception e) {
+            log.error("Erro ao deletar quarto", e);
+            attributes.addFlashAttribute("errorMessage", "Ocorreu um erro ao tentar excluir o quarto. Verifique as dependências.");
+        }
+
         return "redirect:/quarto/listar";
     }
 

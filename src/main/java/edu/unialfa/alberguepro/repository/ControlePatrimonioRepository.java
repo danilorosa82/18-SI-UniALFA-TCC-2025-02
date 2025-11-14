@@ -6,5 +6,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface ControlePatrimonioRepository extends JpaRepository <ControlePatrimonio, Long> {
-    List<ControlePatrimonio> findByNomeContainingIgnoreCase(String nome);
+    List<ControlePatrimonio> findByPatrimonioContainingIgnoreCase(String patrimonio);
+
+    ControlePatrimonio findByPatrimonio(String patrimonio);
+
+    ControlePatrimonio findByPatrimonioAndIdNot(String patrimonio, Long id);
+
 }
