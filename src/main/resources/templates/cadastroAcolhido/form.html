@@ -336,7 +336,7 @@
 
                     <div class="form-group" id="divQualDroga" style="display:none;">
                         <label for="qualDroga">Qual Droga</label>
-                        <input type="text" class="form-control" id="qualDroga" th:field="*{qualDroga}"placeholder="Informe qual droga">
+                        <input type="text" class="form-control" id="qualDroga" th:field="*{qualDroga}" placeholder="Informe qual droga">
                         <div th:if="${#fields.hasErrors('qualDroga')}" th:errors="*{qualDroga}" class="text-danger"></div>
                     </div>
 
