@@ -47,4 +47,6 @@ public interface VagaRepository extends JpaRepository<Vaga, Long>  {
             "GROUP BY YEAR(data_saida), MONTH(data_saida) " +
             "ORDER BY ano, mes", nativeQuery = true)
     List<Object[]> countSaidasUltimos6Meses();
+
+    List<Vaga> findByAcolhidoNomeContainingIgnoreCase(String nome);
 }

@@ -3,6 +3,7 @@ package edu.unialfa.alberguepro.controller;
 import edu.unialfa.alberguepro.model.ControlePatrimonio;
 import edu.unialfa.alberguepro.repository.ControlePatrimonioRepository;
 import edu.unialfa.alberguepro.repository.PatrimonioSpecification;
+import edu.unialfa.alberguepro.service.ControlePatrimonioService;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class ControlePatrimonioController {
 
     @Autowired
     private ControlePatrimonioRepository controlePatrimonioRepository;
+
+    @Autowired
+    private ControlePatrimonioService controlePatrimonioService;
 
     @GetMapping
     public String listarPatrimonios(Model model,
@@ -71,8 +75,12 @@ public class ControlePatrimonioController {
         }
 
         try {
-            controlePatrimonioRepository.save(controlePatrimonio);
+            controlePatrimonioService.salvar(controlePatrimonio);
             attributes.addFlashAttribute("successMessage", "Patrimônio salvo com sucesso!");
+        } catch (IllegalArgumentException e) {
+            ModelAndView mv = new ModelAndView("patrimonio/form");
+            mv.addObject("errorMessage", e.getMessage());
+            return mv;
         } catch (Exception e) {
             attributes.addFlashAttribute("errorMessage", "Erro ao salvar patrimônio: " + e.getMessage());
         }
