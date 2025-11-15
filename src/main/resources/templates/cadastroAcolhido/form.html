@@ -28,7 +28,7 @@
         <div class="card-header">
             <h3 class="card-title">Cadastro de Acolhido</h3>
         </div>
-        <form th:action="@{/cadastroAcolhido/salvar}" th:object="${acolhido}" method="post" id="multiStepForm">
+        <form th:action="@{/cadastroAcolhido/salvar}" th:object="${acolhido}" method="post" id="multiStepForm" autocomplete="off">
             <input type="hidden" th:field="*{id}" />
 
             <div class="step" id="step1">
