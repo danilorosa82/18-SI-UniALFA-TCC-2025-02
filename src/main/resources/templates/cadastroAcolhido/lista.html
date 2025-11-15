@@ -81,6 +81,7 @@
                     <th>Idade</th>
                     <th>Sexo</th>
                     <th>Data de Ingresso</th>
+                    <th>Data de Saída</th>
                     <th>Ações</th>
                 </tr>
                 </thead>
@@ -90,6 +91,7 @@
                     <td th:text="${acolhido.idade}">35</td>
                     <td th:text="${acolhido.sexo}">Masculino</td>
                     <td th:text="${#temporals.format(acolhido.dataIngresso, 'dd/MM/yyyy')}">10/09/2025</td>
+                    <td th:text="${#temporals.format(acolhido.dataSaida, 'dd/MM/yyyy')}">10/11/2025</td>
                     <td>
                         <a th:href="@{/cadastroAcolhido/editar/{id}(id=${acolhido.id})}" class="btn btn-warning btn-sm">
                             <i class="fas fa-edit"></i>
