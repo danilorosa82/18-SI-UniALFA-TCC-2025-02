@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
@@ -28,7 +29,6 @@ import jakarta.validation.Valid;
 import net.sf.jasperreports.engine.JRException;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,29 +57,85 @@ public class EstoqueController {
     public String listarProdutos(Model model,
         @RequestParam(required = false) String nome,
         @RequestParam(required = false) String tipo,
-        @RequestParam(required = false) Long unidadeId) {
-        Specification<Produto> spec = Specification.where(null);
+        @RequestParam(required = false) Long unidadeId,
+        @RequestParam(required = false) Integer diasVencimento,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "15") int size,
+        @RequestParam(defaultValue = "nome") String sort,
+        @RequestParam(defaultValue = "asc") String dir) {
+        
+        org.springframework.data.domain.Page<Produto> pageResult;
+        
+        // Criar ordenação
+        org.springframework.data.domain.Sort.Direction direction = dir.equals("desc") ? 
+            org.springframework.data.domain.Sort.Direction.DESC : org.springframework.data.domain.Sort.Direction.ASC;
+        org.springframework.data.domain.Sort sortObj = org.springframework.data.domain.Sort.by(direction, sort);
+        
+        // Se o filtro de vencimento está ativo, usar lógica específica
+        if (diasVencimento != null && diasVencimento > 0) {
+            List<Produto> produtos = estoqueService.buscarProdutosProximosVencimento(diasVencimento);
+            
+            // Aplicar filtros adicionais se necessário
+            if (nome != null && !nome.isEmpty()) {
+                produtos = produtos.stream()
+                    .filter(p -> p.getNome().toLowerCase().contains(nome.toLowerCase()))
+                    .toList();
+            }
+            if (tipo != null && !tipo.isEmpty()) {
+                produtos = produtos.stream()
+                    .filter(p -> tipo.equals(p.getTipo()))
+                    .toList();
+            }
+            if (unidadeId != null && unidadeId > 0) {
+                produtos = produtos.stream()
+                    .filter(p -> p.getUnidade() != null && p.getUnidade().getId().equals(unidadeId))
+                    .toList();
+            }
+            
+            // Paginar manualmente a lista
+            int start = Math.min(page * size, produtos.size());
+            int end = Math.min(start + size, produtos.size());
+            List<Produto> pageContent = produtos.subList(start, end);
+            pageResult = new org.springframework.data.domain.PageImpl<>(pageContent, 
+                org.springframework.data.domain.PageRequest.of(page, size, sortObj), produtos.size());
+        } else {
+            // Lógica normal de filtros com paginação
+            Specification<Produto> spec = Specification.where(null);
 
-        if (nome != null && !nome.isEmpty()) {
-            spec = spec.and(ProdutoSpecification.comNome(nome));
-        }
+            if (nome != null && !nome.isEmpty()) {
+                spec = spec.and(ProdutoSpecification.comNome(nome));
+            }
 
-        if (tipo != null && !tipo.isEmpty()) {
-            spec = spec.and(ProdutoSpecification.comTipo(tipo));
+            if (tipo != null && !tipo.isEmpty()) {
+                spec = spec.and(ProdutoSpecification.comTipo(tipo));
+            }
+
+            Unidade unidade = null;
+            if (unidadeId != null && unidadeId > 0) {
+                unidade = unidadeRepository.findById(unidadeId).orElse(null);
+                if (unidade != null) {
+                    spec = spec.and(ProdutoSpecification.comUnidade(unidade));
+                }
+            }
+
+            org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sortObj);
+            pageResult = produtoRepository.findAll(spec, pageable);
         }
 
         Unidade unidade = null;
         if (unidadeId != null && unidadeId > 0) {
             unidade = unidadeRepository.findById(unidadeId).orElse(null);
-            if (unidade != null) {
-                spec = spec.and(ProdutoSpecification.comUnidade(unidade));
-            }
         }
 
-        model.addAttribute("produtos", produtoRepository.findAll(spec));
+        model.addAttribute("produtos", pageResult.getContent());
+        model.addAttribute("page", pageResult);
         model.addAttribute("nome", nome);
         model.addAttribute("tipo", tipo);
         model.addAttribute("unidade", unidade);
+        model.addAttribute("diasVencimento", diasVencimento);
+        model.addAttribute("size", size);
+        model.addAttribute("sort", sort);
+        model.addAttribute("dir", dir);
         carregarUnidades(model);
 
         return "estoque/index";
@@ -101,9 +157,17 @@ public class EstoqueController {
             }
         }
 
+        // Validação customizada: data de vencimento obrigatória se não for produto não perecível
+        if (produto.getNaoPerecivel() == null || !produto.getNaoPerecivel()) {
+            if (produto.getDataDeVencimento() == null) {
+                result.rejectValue("dataDeVencimento", "error.produto", "A data de vencimento é obrigatória para produtos perecíveis.");
+            }
+        }
+
         // Verifica todos os erros de validação
         if (result.hasErrors()) {
             carregarUnidades(model);
+            model.addAttribute("errorMessage", "Há problemas em um dos campos preenchidos, verifique e corrija.");
             return "estoque/form";
         }
 
@@ -112,6 +176,7 @@ public class EstoqueController {
         if (unidadeOptional.isEmpty()) {    
             result.rejectValue("unidadeId", "error.produto", "Unidade selecionada é inválida.");
             carregarUnidades(model);
+            model.addAttribute("errorMessage", "Há problemas em um dos campos preenchidos, verifique e corrija.");
             return "estoque/form";
         }
         produto.setUnidade(unidadeOptional.get());
@@ -150,8 +215,15 @@ public class EstoqueController {
     }
 
     @PostMapping("/dar-baixa")
-    public String processarBaixaIndividual(@RequestParam("produtoId") Long produtoId, @RequestParam("quantidade") Integer quantidade) {
-        estoqueService.darBaixa(produtoId, quantidade);
+    public String processarBaixaIndividual(@RequestParam("produtoId") Long produtoId, 
+            @RequestParam("quantidade") Integer quantidade,
+            RedirectAttributes redirectAttributes) {
+        try {
+            estoqueService.darBaixa(produtoId, quantidade);
+            redirectAttributes.addFlashAttribute("successMessage", "Baixa realizada com sucesso!");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/estoque/baixa";
     }
 
@@ -192,44 +264,11 @@ public class EstoqueController {
                 .body(new InputStreamResource(bis));
     }
 
-    @Autowired
-    private MovimentacaoEstoqueRepository movimentacaoEstoqueRepository;
-
-    @GetMapping("/historico")
-    public String verHistorico(Model model) {
-        model.addAttribute("movimentacoes", movimentacaoEstoqueRepository.findAllByOrderByDataMovimentacaoDesc());
-        return "estoque/historico";
-    }
-
-    @GetMapping("/historico/relatorio/pdf")
-    public ResponseEntity<InputStreamResource> gerarRelatorioMovimentacaoPdf() throws JRException {
-        List<edu.unialfa.alberguepro.model.MovimentacaoEstoque> movimentacoes = movimentacaoEstoqueRepository.findAllByOrderByDataMovimentacaoDesc();
-        ByteArrayInputStream bis = relatorioService.gerarRelatorioMovimentacaoPdf(movimentacoes);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "inline; filename=movimentacao_estoque.pdf");
-
-        return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_PDF)
-                .body(new InputStreamResource(bis));
-    }
-
-    @GetMapping("/historico/relatorio/xlsx")
-    public ResponseEntity<InputStreamResource> gerarRelatorioMovimentacaoXlsx() throws IOException {
-        List<edu.unialfa.alberguepro.model.MovimentacaoEstoque> movimentacoes = movimentacaoEstoqueRepository.findAllByOrderByDataMovimentacaoDesc();
-        ByteArrayInputStream bis = relatorioService.gerarRelatorioMovimentacaoXlsx(movimentacoes);
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=movimentacao_estoque.xlsx");
-
-        return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .body(new InputStreamResource(bis));
-    }
-
-    @GetMapping("/relatorio/xlsx")
-    public ResponseEntity<InputStreamResource> gerarRelatorioXlsx(
+    @GetMapping("/relatorio/excel")
+    public ResponseEntity<InputStreamResource> gerarRelatorioExcel(
             @RequestParam(required = false) String nome,
             @RequestParam(required = false) String tipo,
-            @RequestParam(required = false) Long unidadeId) throws IOException {
+            @RequestParam(required = false) Long unidadeId) throws Exception {
 
         Specification<Produto> spec = Specification.where(null);
         if (nome != null && !nome.isEmpty()) {
@@ -239,7 +278,7 @@ public class EstoqueController {
             spec = spec.and(ProdutoSpecification.comTipo(tipo));
         }
         Unidade unidade = null;
-        if (unidadeId != null && unidadeId > 0) {
+        if (unidadeId != null && unidadeId > 0) { 
             unidade = unidadeRepository.findById(unidadeId).orElse(null);
             if (unidade != null) {
                 spec = spec.and(ProdutoSpecification.comUnidade(unidade));
@@ -247,12 +286,136 @@ public class EstoqueController {
         }
 
         List<Produto> produtos = produtoRepository.findAll(spec);
-        ByteArrayInputStream bis = relatorioService.gerarRelatorioXlsx(produtos);
+        ByteArrayInputStream bis = relatorioService.gerarRelatorioExcel(produtos);
 
         HttpHeaders headers = new HttpHeaders();
         headers.add("Content-Disposition", "attachment; filename=estoque.xlsx");
 
-        return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+        return ResponseEntity.ok().headers(headers)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(new InputStreamResource(bis));
+    }
+
+    @Autowired
+    private MovimentacaoEstoqueRepository movimentacaoEstoqueRepository;
+
+    @GetMapping("/historico")
+    public String verHistorico(Model model,
+        @RequestParam(required = false) String nomeProduto,
+        @RequestParam(required = false) String tipo) {
+        
+        Specification<edu.unialfa.alberguepro.model.MovimentacaoEstoque> spec = Specification.where(null);
+
+        if (nomeProduto != null && !nomeProduto.isEmpty()) {
+            spec = spec.and(edu.unialfa.alberguepro.repository.MovimentacaoEstoqueSpecification.comProdutoNome(nomeProduto));
+        }
+
+        if (tipo != null && !tipo.isEmpty()) {
+            try {
+                edu.unialfa.alberguepro.model.MovimentacaoEstoque.TipoMovimentacao tipoEnum = 
+                    edu.unialfa.alberguepro.model.MovimentacaoEstoque.TipoMovimentacao.valueOf(tipo);
+                spec = spec.and(edu.unialfa.alberguepro.repository.MovimentacaoEstoqueSpecification.comTipo(tipoEnum));
+            } catch (IllegalArgumentException e) {
+                // Ignora tipo inválido
+            }
+        }
+
+        model.addAttribute("movimentacoes", movimentacaoEstoqueRepository.findAll(spec, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "dataMovimentacao")));
+        model.addAttribute("nomeProduto", nomeProduto);
+        model.addAttribute("tipo", tipo);
+        
+        return "estoque/historico";
+    }
+
+    @GetMapping("/historico/relatorio/pdf")
+    public ResponseEntity<InputStreamResource> gerarRelatorioMovimentacaoPdf(
+            @RequestParam(required = false) String nomeProduto,
+            @RequestParam(required = false) String tipo) throws JRException {
+        
+        Specification<edu.unialfa.alberguepro.model.MovimentacaoEstoque> spec = Specification.where(null);
+
+        if (nomeProduto != null && !nomeProduto.isEmpty()) {
+            spec = spec.and(edu.unialfa.alberguepro.repository.MovimentacaoEstoqueSpecification.comProdutoNome(nomeProduto));
+        }
+
+        if (tipo != null && !tipo.isEmpty()) {
+            try {
+                edu.unialfa.alberguepro.model.MovimentacaoEstoque.TipoMovimentacao tipoEnum = 
+                    edu.unialfa.alberguepro.model.MovimentacaoEstoque.TipoMovimentacao.valueOf(tipo);
+                spec = spec.and(edu.unialfa.alberguepro.repository.MovimentacaoEstoqueSpecification.comTipo(tipoEnum));
+            } catch (IllegalArgumentException e) {
+                // Ignora tipo inválido
+            }
+        }
+
+        List<edu.unialfa.alberguepro.model.MovimentacaoEstoque> movimentacoes = movimentacaoEstoqueRepository.findAll(spec, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "dataMovimentacao"));
+        ByteArrayInputStream bis = relatorioService.gerarRelatorioMovimentacaoPdf(movimentacoes);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "inline; filename=movimentacao_estoque.pdf");
+
+        return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_PDF)
+                .body(new InputStreamResource(bis));
+    }
+
+    @GetMapping("/historico/relatorio/excel")
+    public ResponseEntity<InputStreamResource> gerarRelatorioMovimentacaoExcel(
+            @RequestParam(required = false) String nomeProduto,
+            @RequestParam(required = false) String tipo) throws Exception {
+        
+        Specification<edu.unialfa.alberguepro.model.MovimentacaoEstoque> spec = Specification.where(null);
+
+        if (nomeProduto != null && !nomeProduto.isEmpty()) {
+            spec = spec.and(edu.unialfa.alberguepro.repository.MovimentacaoEstoqueSpecification.comProdutoNome(nomeProduto));
+        }
+
+        if (tipo != null && !tipo.isEmpty()) {
+            try {
+                edu.unialfa.alberguepro.model.MovimentacaoEstoque.TipoMovimentacao tipoEnum = 
+                    edu.unialfa.alberguepro.model.MovimentacaoEstoque.TipoMovimentacao.valueOf(tipo);
+                spec = spec.and(edu.unialfa.alberguepro.repository.MovimentacaoEstoqueSpecification.comTipo(tipoEnum));
+            } catch (IllegalArgumentException e) {
+                // Ignora tipo inválido
+            }
+        }
+
+        List<edu.unialfa.alberguepro.model.MovimentacaoEstoque> movimentacoes = movimentacaoEstoqueRepository.findAll(spec, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "dataMovimentacao"));
+        ByteArrayInputStream bis = relatorioService.gerarRelatorioMovimentacaoExcel(movimentacoes);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=movimentacao_estoque.xlsx");
+
+        return ResponseEntity.ok().headers(headers)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(new InputStreamResource(bis));
+    }
+
+    @GetMapping("/relatorio/vencimento/pdf")
+    public ResponseEntity<InputStreamResource> gerarRelatorioVencimentoPdf(
+            @RequestParam(defaultValue = "30") Integer dias) throws JRException {
+        
+        List<Produto> produtos = estoqueService.buscarProdutosProximosVencimento(dias);
+        ByteArrayInputStream bis = relatorioService.gerarRelatorioVencimentoPdf(produtos, dias);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "inline; filename=produtos_vencimento.pdf");
+
+        return ResponseEntity.ok().headers(headers).contentType(MediaType.APPLICATION_PDF)
+                .body(new InputStreamResource(bis));
+    }
+
+    @GetMapping("/relatorio/vencimento/excel")
+    public ResponseEntity<InputStreamResource> gerarRelatorioVencimentoExcel(
+            @RequestParam(defaultValue = "30") Integer dias) throws Exception {
+        
+        List<Produto> produtos = estoqueService.buscarProdutosProximosVencimento(dias);
+        ByteArrayInputStream bis = relatorioService.gerarRelatorioVencimentoExcel(produtos, dias);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=produtos_vencimento.xlsx");
+
+        return ResponseEntity.ok().headers(headers)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(new InputStreamResource(bis));
     }
 }

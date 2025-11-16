@@ -107,6 +107,16 @@ public class CadastroAcolhido {
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate dataSaida;
 
+    @Transient
+    public boolean isDataSaidaProxima() {
+        if (dataSaida == null) {
+            return false;
+        }
+        LocalDate hoje = LocalDate.now();
+        long diasRestantes = java.time.temporal.ChronoUnit.DAYS.between(hoje, dataSaida);
+        return diasRestantes >= 0 && diasRestantes <= 7;
+    }
+
 
     public Sexo getSexo() {
         return sexo;

@@ -9,6 +9,492 @@
     <!-- CSS do AdminLTE e FontAwesome -->
     <link rel="stylesheet" th:href="@{/webjars/AdminLTE/3.2.0/dist/css/adminlte.min.css}">
     <link rel="stylesheet" th:href="@{/webjars/AdminLTE/3.2.0/plugins/fontawesome-free/css/all.min.css}">
+    <style>
+        /* Reduzir tamanhos para simular zoom 75% (menos agressivo que 67%) */
+        
+        /* Fonte base menor */
+        body, html {
+            font-size: 13px !important; /* padrão é 14px, agora 75% = ~13px */
+        }
+        
+        /* Ajustar títulos */
+        h1 { font-size: 2rem !important; }
+        h2 { font-size: 1.6rem !important; }
+        h3 { font-size: 1.4rem !important; }
+        h4 { font-size: 1.2rem !important; }
+        h5 { font-size: 1.05rem !important; }
+        h6 { font-size: 0.95rem !important; }
+        
+        /* Cards e boxes menores */
+        .card {
+            margin-bottom: 0.9rem !important;
+        }
+        
+        .card-header {
+            padding: 0.6rem 0.9rem !important;
+        }
+        
+        .card-body {
+            padding: 0.9rem !important;
+        }
+        
+        .card-title {
+            font-size: 1.05rem !important;
+            margin-bottom: 0 !important;
+        }
+        
+        /* Small boxes do dashboard */
+        .small-box {
+            height: auto !important;
+        }
+        
+        .small-box .inner {
+            padding: 0.7rem !important;
+        }
+        
+        .small-box h3 {
+            font-size: 2.2rem !important;
+        }
+        
+        .small-box p {
+            font-size: 0.95rem !important;
+        }
+        
+        .small-box .icon {
+            font-size: 4.5rem !important;
+        }
+        
+        /* Tabelas */
+        .table {
+            font-size: 0.9rem !important;
+        }
+        
+        .table th,
+        .table td {
+            padding: 0.45rem !important;
+        }
+        
+        /* Botões */
+        .btn {
+            padding: 0.35rem 0.7rem !important;
+            font-size: 0.9rem !important;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem !important;
+            font-size: 0.8rem !important;
+        }
+        
+        .btn-lg {
+            padding: 0.45rem 0.9rem !important;
+            font-size: 1.05rem !important;
+        }
+        
+        /* Formulários */
+        .form-control,
+        .form-select {
+            padding: 0.35rem 0.7rem !important;
+            font-size: 0.9rem !important;
+            height: auto !important;
+        }
+        
+        .form-group {
+            margin-bottom: 0.7rem !important;
+        }
+        
+        label {
+            font-size: 0.9rem !important;
+            margin-bottom: 0.25rem !important;
+        }
+        
+        /* Barra lateral - REDUZIDA */
+        .main-sidebar {
+            width: 220px !important; /* aumentado de 200px para 220px */
+            overflow-x: hidden !important;
+        }
+        
+        /* Ajustar content-wrapper para compensar sidebar menor */
+        body:not(.sidebar-collapse) .content-wrapper,
+        body:not(.sidebar-collapse) .main-footer,
+        body:not(.sidebar-collapse) .main-header {
+            margin-left: 220px !important; /* aumentado de 200px para 220px */
+        }
+        
+        /* Quando sidebar está colapsado, usar valores padrão do AdminLTE */
+        body.sidebar-collapse .content-wrapper,
+        body.sidebar-collapse .main-footer,
+        body.sidebar-collapse .main-header {
+            margin-left: 4.6rem !important; /* valor padrão do AdminLTE */
+        }
+        
+        body.sidebar-collapse .main-sidebar {
+            width: 4.6rem !important; /* valor padrão colapsado */
+        }
+        
+        /* Esconder texto do menu quando colapsado */
+        body.sidebar-collapse .nav-sidebar .nav-link p {
+            display: none !important;
+        }
+        
+        /* Esconder setas quando colapsado */
+        body.sidebar-collapse .nav-sidebar .nav-link .right {
+            display: none !important;
+        }
+        
+        /* Centralizar ícones quando colapsado - SEM ANIMAÇÕES */
+        body.sidebar-collapse .nav-sidebar .nav-link {
+            text-align: center !important;
+            padding: 0.5rem !important;
+            justify-content: center !important;
+            display: flex !important;
+            position: static !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+        }
+        
+        body.sidebar-collapse .nav-sidebar .nav-link .nav-icon {
+            margin-right: 0 !important;
+            margin-left: 0 !important;
+            display: inline-block !important;
+            width: auto !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            transform: none !important;
+            transition: none !important;
+            position: static !important;
+        }
+        
+        /* Desabilitar TUDO no hover quando colapsado */
+        body.sidebar-collapse .nav-sidebar .nav-link:hover,
+        body.sidebar-collapse .nav-sidebar .nav-link:focus {
+            width: auto !important;
+            overflow: hidden !important;
+            position: static !important;
+            transform: none !important;
+        }
+        
+        body.sidebar-collapse .nav-sidebar .nav-link:hover .nav-icon,
+        body.sidebar-collapse .nav-sidebar .nav-link:focus .nav-icon {
+            transform: none !important;
+            margin-right: 0 !important;
+            margin-left: 0 !important;
+            position: static !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            display: inline-block !important;
+            transition: none !important;
+        }
+        
+        /* Forçar sidebar a não expandir no hover */
+        body.sidebar-collapse .main-sidebar:hover {
+            width: 4.6rem !important;
+        }
+        
+        /* Manter espaçamento correto dos ícones quando expandido */
+        body:not(.sidebar-collapse) .nav-sidebar .nav-link {
+            text-align: left !important;
+            padding: 0.55rem 0.8rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+        }
+        
+        body:not(.sidebar-collapse) .nav-sidebar .nav-link .nav-icon {
+            margin-right: 0.8rem !important;
+            width: 1.4rem !important;
+            display: inline-block !important;
+            text-align: center;
+        }
+        
+        /* Esconder nome da marca quando colapsado */
+        body.sidebar-collapse .brand-text {
+            display: none !important;
+        }
+        
+        /* Garantir transição suave */
+        .main-sidebar,
+        .content-wrapper,
+        .main-header,
+        .main-footer {
+            transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out !important;
+        }
+        
+        /* Menu lateral */
+        .nav-sidebar .nav-link {
+            padding: 0.55rem 0.8rem !important;
+            font-size: 1.05rem !important;
+        }
+        
+        .nav-sidebar .nav-link .nav-icon {
+            font-size: 1.15rem !important;
+            margin-right: 0.6rem !important;
+            width: 1.4rem !important;
+        }
+        
+        /* Setas de dropdown - FORÇAR VISIBILIDADE COM ESPECIFICIDADE MÁXIMA */
+        body:not(.sidebar-collapse) .nav-sidebar .nav-item .nav-link .right,
+        body:not(.sidebar-collapse) .nav-sidebar .nav-item .nav-link p .right,
+        body:not(.sidebar-collapse) .sidebar .nav-sidebar .nav-link .right,
+        body:not(.sidebar-collapse) [data-widget="treeview"] .nav-link .right {
+            font-size: 1rem !important;
+            transition: transform 0.3s ease !important;
+            display: inline-block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            color: rgba(255, 255, 255, 0.8) !important;
+            margin-left: auto !important;
+        }
+        
+        /* Quando o menu está aberto - rotacionar seta */
+        body:not(.sidebar-collapse) .nav-item.menu-open > .nav-link .right,
+        body:not(.sidebar-collapse) .nav-item.menu-open > .nav-link p .right {
+            transform: rotate(-90deg) !important;
+        }
+        
+        /* Garantir que o link use flexbox */
+        body:not(.sidebar-collapse) .nav-sidebar .nav-link {
+            display: flex !important;
+            align-items: center !important;
+        }
+        
+        /* Garantir que o parágrafo ocupe espaço disponível */
+        body:not(.sidebar-collapse) .nav-sidebar .nav-link p {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            width: 100% !important;
+            margin: 0 !important;
+        }
+        
+        .brand-link {
+            padding: 0.8rem 1rem !important;
+            font-size: 1.35rem !important; /* aumentado de 1.25rem para 1.35rem */
+            font-weight: 500 !important;
+        }
+        
+        /* Navbar superior */
+        .main-header {
+            padding: 0 0.9rem !important;
+        }
+        
+        .navbar-nav .nav-link {
+            padding: 0.35rem 0.7rem !important;
+        }
+        
+        /* Footer */
+        .main-footer {
+            padding: 0.7rem !important;
+            font-size: 0.85rem !important;
+        }
+        
+        /* Content wrapper */
+        .content-header {
+            padding: 0.7rem 0 !important;
+        }
+        
+        .content {
+            padding-top: 0.5rem !important;
+        }
+        
+        /* Badges */
+        .badge {
+            padding: 0.25rem 0.45rem !important;
+            font-size: 0.8rem !important;
+        }
+        
+        /* Alerts */
+        .alert {
+            padding: 0.6rem 0.9rem !important;
+            font-size: 0.9rem !important;
+        }
+        
+        /* Input groups */
+        .input-group-text {
+            padding: 0.35rem 0.7rem !important;
+            font-size: 0.9rem !important;
+        }
+        
+        /* Ajuste para submenu (treeview) */
+        .nav-treeview > .nav-item > .nav-link {
+            padding-left: 2.4rem !important;
+            font-size: 0.98rem !important; /* aumentado de 0.9rem para 0.98rem */
+        }
+        
+        .nav-treeview > .nav-item > .nav-link .nav-icon {
+            font-size: 0.9rem !important;
+        }
+        
+        /* Gráficos - ajustar altura */
+        [id^="chart"] {
+            height: auto !important;
+        }
+        
+        /* ===== RESPONSIVIDADE MOBILE ===== */
+        @media (max-width: 768px) {
+            /* Remover margens fixas do content-wrapper em mobile */
+            body:not(.sidebar-collapse) .content-wrapper,
+            body:not(.sidebar-collapse) .main-footer,
+            body:not(.sidebar-collapse) .main-header {
+                margin-left: 0 !important;
+            }
+            
+            body.sidebar-collapse .content-wrapper,
+            body.sidebar-collapse .main-footer,
+            body.sidebar-collapse .main-header {
+                margin-left: 0 !important;
+            }
+            
+            /* Sidebar oculta por padrão em mobile */
+            .main-sidebar {
+                margin-left: -220px !important;
+            }
+            
+            /* Quando sidebar está aberta em mobile */
+            body:not(.sidebar-collapse) .main-sidebar {
+                margin-left: 0 !important;
+            }
+            
+            /* Responsividade para tabelas */
+            .table-responsive {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Melhorar legibilidade de small-boxes em mobile */
+            .small-box .inner h3 {
+                font-size: 1.8rem !important;
+            }
+            
+            .small-box .inner p {
+                font-size: 0.85rem !important;
+            }
+            
+            /* Ajustar botões em mobile */
+            .btn {
+                padding: 0.4rem 0.8rem !important;
+                font-size: 0.85rem !important;
+            }
+            
+            /* Cards mais compactos */
+            .card-body {
+                padding: 0.75rem !important;
+            }
+            
+            .card-header {
+                padding: 0.5rem 0.75rem !important;
+            }
+        }
+        
+        /* Toasts */
+        .toast-container { position: fixed; top: 1rem; right: 1rem; z-index: 1060; width: 320px; }
+        .toast-msg { display:flex; align-items:center; gap:.5rem; padding:.6rem .9rem; margin-bottom:.5rem; border-radius:.25rem; box-shadow:0 4px 12px rgba(0,0,0,.15); color:#fff; opacity:.98; }
+        .toast-msg.success { background:#28a745; }
+        .toast-msg.error { background:#dc3545; }
+        .toast-msg.info { background:#17a2b8; }
+        .toast-msg.warning { background:#ffc107; color:#212529; }
+        .toast-msg .close { background:transparent; border:0; color:inherit; font-size:1.1rem; line-height:1; margin-left:auto; }
+        
+        /* ===== CARD HEADER AZUL ===== */
+        .card-header-blue {
+            background-color: #007bff !important;
+            color: #ffffff !important;
+            border-bottom: 1px solid #0056b3 !important;
+        }
+        
+        .card-header-blue .card-title {
+            color: #ffffff !important;
+            font-weight: 600 !important;
+        }
+        
+        .card-header-blue .btn {
+            color: #ffffff !important;
+            border-color: #ffffff !important;
+        }
+        
+        /* ===== THEAD BRANCO ===== */
+        .table thead.thead-blue th {
+            background-color: #ffffff !important;
+            color: #212529 !important;
+            border-bottom: 2px solid #dee2e6 !important;
+            font-weight: 600 !important;
+        }
+        
+        /* ===== DARK MODE CUSTOMIZATIONS ===== */
+        body.dark-mode .card-header-blue {
+            background-color: #1e3a8a !important;
+            border-bottom: 1px solid #1e40af !important;
+        }
+        
+        body.dark-mode .table thead.thead-blue th {
+            background-color: #374151 !important;
+            color: #e5e7eb !important;
+            border-bottom: 2px solid #4b5563 !important;
+        }
+        
+        body.dark-mode .toast-msg.success {
+            background: #166534 !important;
+        }
+        
+        body.dark-mode .toast-msg.error {
+            background: #991b1b !important;
+        }
+        
+        body.dark-mode .toast-msg.info {
+            background: #0e7490 !important;
+        }
+        
+        body.dark-mode .toast-msg.warning {
+            background: #a16207 !important;
+            color: #fef3c7 !important;
+        }
+        
+        /* Navbar superior em dark mode */
+        body.dark-mode .main-header {
+            background-color: #1f2937 !important;
+            border-bottom: 1px solid #374151 !important;
+        }
+        
+        body.dark-mode .navbar-light .navbar-nav .nav-link {
+            color: #e5e7eb !important;
+        }
+        
+        body.dark-mode .navbar-light .navbar-nav .nav-link:hover {
+            color: #ffffff !important;
+        }
+        
+        /* Botões de relatório em dark mode - remover border branco */
+        body.dark-mode .card-header-blue .btn {
+            border-color: rgba(255, 255, 255, 0.3) !important;
+        }
+        
+        body.dark-mode .card-header-blue .btn:hover {
+            border-color: rgba(255, 255, 255, 0.5) !important;
+        }
+        
+        /* Ajustar cor de linhas de tabela com warning (produtos esgotados) */
+        .table-warning {
+            background-color: #fff3cd !important;
+            color: #856404 !important;
+        }
+        
+        body.dark-mode .table-warning {
+            background-color: #374151 !important;
+            color: #000000 !important;
+            border-left: 4px solid #f59e0b !important;
+        }
+        
+        body.dark-mode .table-warning td {
+            color: #000000 !important;
+            font-weight: 500 !important;
+        }
+        
+        body.dark-mode .table-warning .badge {
+            background-color: #dc2626 !important;
+            color: #ffffff !important;
+        }
+    </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
@@ -21,8 +507,13 @@
                 <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
             </li>
         </ul>
-        <!-- Botão de Sair -->
+        <!-- Botão de Dark Mode e Sair -->
         <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" id="dark-mode-toggle" href="#" role="button" title="Alternar modo escuro">
+                    <i class="fas fa-moon"></i>
+                </a>
+            </li>
             <li class="nav-item">
                 <form th:action="@{/logout}" method="post">
                     <button type="submit" class="btn btn-link nav-link">
@@ -34,7 +525,7 @@
     </nav>
 
     <!-- Menu lateral -->
-    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+    <aside class="main-sidebar sidebar-no-expand sidebar-dark-primary elevation-4">
         <!-- Logo -->
         <a th:href="@{/}" class="brand-link">
             <span class="brand-text font-weight-light">AlberguePro</span>
@@ -46,14 +537,14 @@
                 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                     <!-- Item do menu: Dashboard -->
                     <li class="nav-item">
-                        <a th:href="@{/}" class="nav-link">
+                        <a th:href="@{/}" class="nav-link" data-toggle="tooltip" data-placement="right" title="Dashboard">
                             <i class="nav-icon fas fa-tachometer-alt"></i>
                             <p>Dashboard</p>
                         </a>
                     </li>
                     <!-- Item do menu: Estoque (com sub-itens) -->
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="#" class="nav-link" data-toggle="tooltip" data-placement="right" title="Gestão de Estoque">
                             <i class="nav-icon fas fa-box-open"></i>
                             <p>
                                 Gestão de Estoque
@@ -84,7 +575,7 @@
                     </li>
                     <!-- Item do menu: Patrimônio (com sub-itens) -->
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="#" class="nav-link" data-toggle="tooltip" data-placement="right" title="Gestão de Patrimônio">
                             <i class="nav-icon fas fa-landmark"></i>
                             <p>
                                 Gestão de Patrimônio
@@ -109,8 +600,8 @@
                     </li>
                     <!-- Item do menu: cadastroAcolhido (com sub-itens) -->
                     <li class="nav-item" sec:authorize="isAuthenticated()">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-users"></i>
+                        <a href="#" class="nav-link" data-toggle="tooltip" data-placement="right" title="Gestão de Acolhido">
+                            <i class="nav-icon fas fa-id-card"></i>
                             <p>
                                 Gestão de Acolhido
                                 <i class="right fas fa-angle-left"></i>
@@ -134,7 +625,7 @@
                     </li>
                     <!-- Item do menu: Vaga (com sub-itens) -->
                     <li class="nav-item" sec:authorize="isAuthenticated()">
-                        <a href="#" class="nav-link">
+                        <a href="#" class="nav-link" data-toggle="tooltip" data-placement="right" title="Gestão de Vaga">
                             <i class="nav-icon fas fa-bed"></i>
                             <p>
                                 Gestão de Vaga
@@ -160,8 +651,8 @@
 
                     <!-- Item do menu: Quarto (com sub-itens) -->
                     <li class="nav-item" sec:authorize="isAuthenticated()">
-                        <a href="#" class="nav-link">
-                            <i class="nav-icon fas fa-bed"></i>
+                        <a href="#" class="nav-link" data-toggle="tooltip" data-placement="right" title="Gestão de Quarto">
+                            <i class="nav-icon fas fa-door-open"></i>
                             <p>
                                 Gestão de Quarto
                                 <i class="right fas fa-angle-left"></i>
@@ -186,8 +677,8 @@
 
                     <!-- Item do menu: Usuários -->
                     <li class="nav-item">
-                        <a th:href="@{/admin/usuarios}" class="nav-link">
-                            <i class="nav-icon fas fa-users"></i>
+                        <a th:href="@{/admin/usuarios}" class="nav-link" data-toggle="tooltip" data-placement="right" title="Gerenciar Usuários">
+                            <i class="nav-icon fas fa-user-alt"></i>
                             <p>Gerenciar Usuários</p>
                         </a>
                     </li>
@@ -198,17 +689,6 @@
 
     <!-- Onde o conteúdo das outras páginas aparece -->
     <div class="content-wrapper">
-        <!-- Cabeçalho do conteúdo (com o título da página) -->
-        <div class="content-header py-2">
-            <div class="container-fluid">
-                <div class="row mb-1">
-                    <div class="col-sm-6">
-                        <!-- O título da página é injetado aqui -->
-                        <h1 class="m-0" th:text="${title}">Título da Página</h1>
-                    </div>
-                </div>
-            </div>
-        </div>
         <!-- Seção do conteúdo principal -->
         <section class="content pb-2">
             <div class="container-fluid">
@@ -229,6 +709,180 @@
 <script th:src="@{/webjars/AdminLTE/3.2.0/plugins/jquery/jquery.min.js}"></script>
 <script th:src="@{/webjars/AdminLTE/3.2.0/plugins/bootstrap/js/bootstrap.bundle.min.js}"></script>
 <script th:src="@{/webjars/AdminLTE/3.2.0/dist/js/adminlte.min.js}"></script>
+<!-- Redirecionar para página de consulta quando sidebar está colapsada -->
+<script>
+$(document).ready(function() {
+    // Restaurar estado da sidebar ao carregar
+    const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+    if (sidebarCollapsed) {
+        $('body').addClass('sidebar-collapse');
+    } else {
+        $('body').removeClass('sidebar-collapse');
+    }
+    
+    // Inicializar tooltips do Bootstrap
+    function initTooltips() {
+        if ($('body').hasClass('sidebar-collapse')) {
+            $('[data-toggle="tooltip"]').tooltip({
+                placement: 'right',
+                boundary: 'window',
+                offset: '0, 10'
+            }).tooltip('enable');
+        } else {
+            $('[data-toggle="tooltip"]').tooltip('dispose');
+        }
+    }
+    
+    // Função para adicionar redirecionamento direto quando colapsado
+    function setupCollapsedBehavior() {
+        if ($('body').hasClass('sidebar-collapse')) {
+            // Estoque -> Consultar
+            $('.nav-sidebar .nav-item').each(function() {
+                var $item = $(this);
+                var $link = $item.children('a.nav-link').first();
+                var $icon = $link.find('.nav-icon');
+                
+                // Verificar qual menu é baseado no ícone
+                if ($icon.hasClass('fa-box-open')) {
+                    // Estoque
+                    $link.off('click').on('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.location.href = '/estoque';
+                        return false;
+                    });
+                } else if ($icon.hasClass('fa-landmark')) {
+                    // Patrimônio
+                    $link.off('click').on('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.location.href = '/patrimonio';
+                        return false;
+                    });
+                } else if ($icon.hasClass('fa-id-card')) {
+                    // Acolhido
+                    $link.off('click').on('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.location.href = '/cadastroAcolhido/listar';
+                        return false;
+                    });
+                } else if ($icon.hasClass('fa-bed')) {
+                    // Vaga
+                    $link.off('click').on('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.location.href = '/vaga/listar';
+                        return false;
+                    });
+                } else if ($icon.hasClass('fa-door-open')) {
+                    // Quarto
+                    $link.off('click').on('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.location.href = '/quarto/listar';
+                        return false;
+                    });
+                }
+            });
+        }
+    }
+    
+    // Aplicar ao carregar
+    initTooltips();
+    setupCollapsedBehavior();
+    
+    // Monitorar mudanças na sidebar e salvar estado
+    $('[data-widget="pushmenu"]').on('collapsed.lte.pushmenu', function() {
+        localStorage.setItem('sidebarCollapsed', 'true');
+        initTooltips();
+        setupCollapsedBehavior();
+    });
+    
+    $('[data-widget="pushmenu"]').on('shown.lte.pushmenu', function() {
+        localStorage.setItem('sidebarCollapsed', 'false');
+        initTooltips();
+        // Quando expandir, remover comportamento customizado
+        $('.nav-sidebar .nav-item > a.nav-link').off('click');
+    });
+});
+</script>
+<!-- Manter sidebar recolhida ao clicar fora -->
+<script>
+$(function() {
+  function keepCollapsed() {
+    if ($('body').hasClass('sidebar-collapse')) {
+      $('body').addClass('sidebar-collapse').removeClass('sidebar-open');
+    }
+  }
+  // Clique em qualquer área fora da sidebar ou do botão
+  $(document).on('click', function(e){
+    if ($(e.target).closest('.main-sidebar, [data-widget="pushmenu"]').length === 0) {
+      keepCollapsed();
+    }
+  });
+  // Clique direto em header, conteúdo ou footer
+  $('.main-header, .content-wrapper, .main-footer').on('click', keepCollapsed);
+  // Em resize manter recolhida
+  $(window).on('resize', keepCollapsed);
+});
+</script>
+<!-- Dark Mode Toggle Script -->
+<script>
+$(document).ready(function() {
+    // Carregar preferência do localStorage ao iniciar
+    const darkMode = localStorage.getItem('darkMode') === 'true';
+    if (darkMode) {
+        $('body').addClass('dark-mode');
+        $('#dark-mode-toggle i').removeClass('fa-moon').addClass('fa-sun');
+        $('#dark-mode-toggle').attr('title', 'Alternar modo claro');
+    }
+    
+    // Toggle dark mode ao clicar no botão
+    $('#dark-mode-toggle').on('click', function(e) {
+        e.preventDefault();
+        
+        // Alternar classe dark-mode no body
+        $('body').toggleClass('dark-mode');
+        
+        // Trocar ícone entre lua e sol
+        const isDarkMode = $('body').hasClass('dark-mode');
+        $(this).find('i').toggleClass('fa-moon fa-sun');
+        
+        // Atualizar tooltip
+        $(this).attr('title', isDarkMode ? 'Alternar modo claro' : 'Alternar modo escuro');
+        
+        // Salvar preferência no localStorage
+        localStorage.setItem('darkMode', isDarkMode);
+        
+        // Disparar evento customizado para atualizar gráficos
+        window.dispatchEvent(new Event('darkModeToggled'));
+    });
+});
+
+// Desabilitar autocomplete em todos os inputs, selects e textareas
+document.addEventListener('DOMContentLoaded', function() {
+    // Desabilitar em todos os formulários
+    document.querySelectorAll('form').forEach(function(form) {
+        form.setAttribute('autocomplete', 'off');
+    });
+    
+    // Desabilitar em todos os inputs
+    document.querySelectorAll('input').forEach(function(input) {
+        input.setAttribute('autocomplete', 'off');
+    });
+    
+    // Desabilitar em todos os selects
+    document.querySelectorAll('select').forEach(function(select) {
+        select.setAttribute('autocomplete', 'off');
+    });
+    
+    // Desabilitar em todos os textareas
+    document.querySelectorAll('textarea').forEach(function(textarea) {
+        textarea.setAttribute('autocomplete', 'off');
+    });
+});
+</script>
 <th:block th:replace="${script}"></th:block>
 <!-- ApexCharts -->
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
