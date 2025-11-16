@@ -24,10 +24,22 @@
         <div class="card-body" style="display: none;">
             <form th:action="@{/cadastroAcolhido/listar}" method="get">
                 <div class="row">
-                    <div class="col-md-10">
+                    <div class="col-md-7">
                         <div class="form-group">
                             <label for="filtro">Nome do Acolhido:</label>
                             <input type="text" id="filtro" name="filtro" class="form-control" placeholder="Buscar acolhido por nome..." th:value="${filtro}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="diasPermanencia">Permanência:</label>
+                            <select id="diasPermanencia" name="diasPermanencia" class="form-control">
+                                <option value="">Todos os acolhidos</option>
+                                <option value="30" th:selected="${diasPermanencia != null and diasPermanencia == 30}">Mais de 30 dias</option>
+                                <option value="60" th:selected="${diasPermanencia != null and diasPermanencia == 60}">Mais de 60 dias</option>
+                                <option value="90" th:selected="${diasPermanencia != null and diasPermanencia == 90}">Mais de 90 dias</option>
+                                <option value="120" th:selected="${diasPermanencia != null and diasPermanencia == 120}">Mais de 120 dias</option>
+                            </select>
                         </div>
                     </div>
                     <div class="col-md-2">
@@ -51,14 +63,29 @@
     <div class="card">
         <div class="card-header card-header-blue">
             <div class="d-flex justify-content-between align-items-center">
-                <h3 class="card-title mb-0">Acolhidos Cadastrados</h3>
+                <h3 class="card-title mb-0">
+                    <span th:if="${diasPermanencia == null}">Acolhidos Cadastrados</span>
+                    <span th:if="${diasPermanencia != null}">Acolhidos com Permanência Prolongada - Mais de <span th:text="${diasPermanencia}"></span> dias</span>
+                </h3>
                 <div class="card-tools">
-                    <a th:href="@{/cadastroAcolhido/relatorio/pdf}" class="btn btn-danger" target="_blank">
-                        <i class="fas fa-file-pdf"></i> Gerar PDF
-                    </a>
-                    <a th:href="@{/cadastroAcolhido/relatorio/excel}" class="btn btn-success">
-                        <i class="fas fa-file-excel"></i> Gerar Excel
-                    </a>
+                    <!-- Relatórios Gerais -->
+                    <span th:if="${diasPermanencia == null}">
+                        <a th:href="@{/cadastroAcolhido/relatorio/pdf}" class="btn btn-danger" target="_blank">
+                            <i class="fas fa-file-pdf"></i> PDF Geral
+                        </a>
+                        <a th:href="@{/cadastroAcolhido/relatorio/excel}" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Excel Geral
+                        </a>
+                    </span>
+                    <!-- Relatórios de Permanência -->
+                    <span th:if="${diasPermanencia != null}">
+                        <a th:href="@{/cadastroAcolhido/relatorio/permanencia/pdf(dias=${diasPermanencia})}" class="btn btn-danger" target="_blank">
+                            <i class="fas fa-file-pdf"></i> PDF Permanência
+                        </a>
+                        <a th:href="@{/cadastroAcolhido/relatorio/permanencia/excel(dias=${diasPermanencia})}" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Excel Permanência
+                        </a>
+                    </span>
                 </div>
             </div>
         </div>

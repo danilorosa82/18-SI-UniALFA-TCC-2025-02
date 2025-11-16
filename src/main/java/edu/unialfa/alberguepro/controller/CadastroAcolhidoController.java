@@ -265,17 +265,30 @@ public class CadastroAcolhidoController {
     }
 
     @GetMapping("listar")
-    public String listar(@RequestParam(required = false) String filtro, Model model) {
+    public String listar(@RequestParam(required = false) String filtro,
+                        @RequestParam(required = false) Integer diasPermanencia,
+                        Model model) {
         List<CadastroAcolhido> acolhidos;
 
-        if (filtro != null && !filtro.trim().isEmpty()) {
-            acolhidos = service.buscarPorNome(filtro);
+        if (diasPermanencia != null && diasPermanencia > 0) {
+            acolhidos = service.buscarAcolhidosPermanenciaProlongada(diasPermanencia);
+            
+            if (filtro != null && !filtro.trim().isEmpty()) {
+                acolhidos = acolhidos.stream()
+                    .filter(a -> a.getNome().toLowerCase().contains(filtro.toLowerCase()))
+                    .toList();
+            }
         } else {
-            acolhidos = service.listarTodos();
+            if (filtro != null && !filtro.trim().isEmpty()) {
+                acolhidos = service.buscarPorNome(filtro);
+            } else {
+                acolhidos = service.listarTodos();
+            }
         }
 
         model.addAttribute("acolhidos", acolhidos);
         model.addAttribute("filtro", filtro);
+        model.addAttribute("diasPermanencia", diasPermanencia);
         return "cadastroAcolhido/lista";
     }
 

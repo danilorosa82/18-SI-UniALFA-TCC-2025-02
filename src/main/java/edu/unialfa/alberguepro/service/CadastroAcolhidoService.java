@@ -5,6 +5,7 @@ import edu.unialfa.alberguepro.repository.CadastroAcolhidoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -35,5 +36,10 @@ public class CadastroAcolhidoService {
 
     public boolean cpfJaExiste(String cpf) {
         return repository.existsByCpf(cpf);
+    }
+
+    public List<CadastroAcolhido> buscarAcolhidosPermanenciaProlongada(Integer dias) {
+        LocalDate dataLimite = LocalDate.now().minusDays(dias);
+        return repository.findByDataIngressoBeforeAndDataSaidaIsNullOrderByDataIngressoAsc(dataLimite);
     }
 }
