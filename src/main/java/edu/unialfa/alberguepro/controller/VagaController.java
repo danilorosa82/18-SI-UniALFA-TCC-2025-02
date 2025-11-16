@@ -126,17 +126,23 @@ public class VagaController {
     }
 
     @GetMapping("listar")
-    public String listar(Model model, @RequestParam(required = false) String filtro) {
-        List<Vaga> vaga;
+    public String listar(Model model, 
+                        @RequestParam(required = false) String filtro,
+                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "15") int size) {
+        org.springframework.data.domain.Page<Vaga> pageResult;
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
         
         if (filtro != null && !filtro.trim().isEmpty()) {
-            vaga = service.buscarPorNomeAcolhido(filtro);
+            pageResult = service.buscarPorNomeAcolhidoPaginado(filtro, pageable);
         } else {
-            vaga = service.listarTodos();
+            pageResult = service.listarTodosPaginado(pageable);
         }
         
-        model.addAttribute("vagas", vaga);
+        model.addAttribute("vagas", pageResult.getContent());
+        model.addAttribute("page", pageResult);
         model.addAttribute("filtro", filtro);
+        model.addAttribute("size", size);
         return "vaga/lista";
     }
 

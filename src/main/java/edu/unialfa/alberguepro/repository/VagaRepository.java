@@ -2,6 +2,8 @@ package edu.unialfa.alberguepro.repository;
 
 import edu.unialfa.alberguepro.model.ControlePatrimonio;
 import edu.unialfa.alberguepro.model.Vaga;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -60,4 +62,6 @@ public interface VagaRepository extends JpaRepository<Vaga, Long>  {
     List<Object[]> countSaidasUltimos6Meses();
 
     List<Vaga> findByAcolhidoNomeContainingIgnoreCase(String nome);
+    
+    Page<Vaga> findByAcolhidoNomeContainingIgnoreCase(String nome, Pageable pageable);
 }

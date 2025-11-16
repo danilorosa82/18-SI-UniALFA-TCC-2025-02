@@ -267,28 +267,39 @@ public class CadastroAcolhidoController {
     @GetMapping("listar")
     public String listar(@RequestParam(required = false) String filtro,
                         @RequestParam(required = false) Integer diasPermanencia,
+                        @RequestParam(defaultValue = "0") int page,
+                        @RequestParam(defaultValue = "15") int size,
                         Model model) {
-        List<CadastroAcolhido> acolhidos;
+        org.springframework.data.domain.Page<CadastroAcolhido> pageResult;
 
         if (diasPermanencia != null && diasPermanencia > 0) {
-            acolhidos = service.buscarAcolhidosPermanenciaProlongada(diasPermanencia);
+            List<CadastroAcolhido> acolhidos = service.buscarAcolhidosPermanenciaProlongada(diasPermanencia);
             
             if (filtro != null && !filtro.trim().isEmpty()) {
                 acolhidos = acolhidos.stream()
                     .filter(a -> a.getNome().toLowerCase().contains(filtro.toLowerCase()))
                     .toList();
             }
+            
+            int start = Math.min(page * size, acolhidos.size());
+            int end = Math.min(start + size, acolhidos.size());
+            List<CadastroAcolhido> pageContent = acolhidos.subList(start, end);
+            pageResult = new org.springframework.data.domain.PageImpl<>(pageContent, 
+                org.springframework.data.domain.PageRequest.of(page, size), acolhidos.size());
         } else {
+            org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
             if (filtro != null && !filtro.trim().isEmpty()) {
-                acolhidos = service.buscarPorNome(filtro);
+                pageResult = service.buscarPorNomePaginado(filtro, pageable);
             } else {
-                acolhidos = service.listarTodos();
+                pageResult = service.listarTodosPaginado(pageable);
             }
         }
 
-        model.addAttribute("acolhidos", acolhidos);
+        model.addAttribute("acolhidos", pageResult.getContent());
+        model.addAttribute("page", pageResult);
         model.addAttribute("filtro", filtro);
         model.addAttribute("diasPermanencia", diasPermanencia);
+        model.addAttribute("size", size);
         return "cadastroAcolhido/lista";
     }
 

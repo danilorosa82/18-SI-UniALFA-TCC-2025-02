@@ -154,6 +154,9 @@
                     <strong>Legenda:</strong> Linhas destacadas em <span class="badge badge-warning">amarelo</span> indicam acolhidos com data de saída prevista nos próximos 7 dias.
                 </small>
             </div>
+            
+            <!-- Paginação usando fragmento -->
+            <div th:replace="fragments/pagination :: pagination(${page}, ${size}, '/cadastroAcolhido/listar', {filtro: ${filtro}, diasPermanencia: ${diasPermanencia}})"></div>
         </div>
     </div>
 </section>
