@@ -44,8 +44,23 @@ public class UsuarioController {
     private RelatorioUsuarioPatrimonioService relatorioService;
 
     @GetMapping
-    public String listarUsuarios(Model model) {
-        model.addAttribute("usuarios", usuarioService.findAllDTO());
+    public String listarUsuarios(Model model,
+                                 @RequestParam(defaultValue = "0") int page,
+                                 @RequestParam(defaultValue = "15") int size,
+                                 @RequestParam(defaultValue = "username") String sort,
+                                 @RequestParam(defaultValue = "asc") String dir) {
+        // Criar ordenação
+        org.springframework.data.domain.Sort.Direction direction = dir.equals("desc") ? 
+            org.springframework.data.domain.Sort.Direction.DESC : org.springframework.data.domain.Sort.Direction.ASC;
+        org.springframework.data.domain.Sort sortObj = org.springframework.data.domain.Sort.by(direction, sort);
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sortObj);
+        org.springframework.data.domain.Page<UsuarioDTO> pageResult = usuarioService.findAllDTOPaginado(pageable);
+        
+        model.addAttribute("usuarios", pageResult.getContent());
+        model.addAttribute("page", pageResult);
+        model.addAttribute("size", size);
+        model.addAttribute("sort", sort);
+        model.addAttribute("dir", dir);
         
         // Adicionar informação do usuário logado
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

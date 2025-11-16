@@ -24,10 +24,21 @@
         <div class="card-body" style="display: none;">
             <form th:action="@{/cadastroAcolhido/listar}" method="get">
                 <div class="row">
-                    <div class="col-md-10">
+                    <div class="col-md-7">
                         <div class="form-group">
                             <label for="filtro">Nome do Acolhido:</label>
                             <input type="text" id="filtro" name="filtro" class="form-control" placeholder="Buscar acolhido por nome..." th:value="${filtro}">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="diasPermanencia">Filtrar por tempo de permanência:</label>
+                            <select id="diasPermanencia" name="diasPermanencia" class="form-control">
+                                <option value="">Todos os acolhidos</option>
+                                <option value="30" th:selected="${diasPermanencia != null and diasPermanencia == 30}">Permanência superior a 30 dias</option>
+                                <option value="60" th:selected="${diasPermanencia != null and diasPermanencia == 60}">Permanência superior a 60 dias</option>
+                                <option value="90" th:selected="${diasPermanencia != null and diasPermanencia == 90}">Permanência superior a 90 dias (Limite)</option>
+                            </select>
                         </div>
                     </div>
                     <div class="col-md-2">
@@ -51,14 +62,31 @@
     <div class="card">
         <div class="card-header card-header-blue">
             <div class="d-flex justify-content-between align-items-center">
-                <h3 class="card-title mb-0">Acolhidos Cadastrados</h3>
+                <h3 class="card-title mb-0">
+                    <span th:if="${diasPermanencia == null}">Acolhidos Cadastrados</span>
+                    <span th:if="${diasPermanencia != null}">Acolhidos com Permanência Superior a <span th:text="${diasPermanencia}"></span> dias 
+                        <span th:if="${diasPermanencia == 90}" class="badge badge-danger">Limite Atingido</span>
+                    </span>
+                </h3>
                 <div class="card-tools">
-                    <a th:href="@{/cadastroAcolhido/relatorio/pdf}" class="btn btn-danger" target="_blank">
-                        <i class="fas fa-file-pdf"></i> Gerar PDF
-                    </a>
-                    <a th:href="@{/cadastroAcolhido/relatorio/excel}" class="btn btn-success">
-                        <i class="fas fa-file-excel"></i> Gerar Excel
-                    </a>
+                    <!-- Relatórios Gerais -->
+                    <span th:if="${diasPermanencia == null}">
+                        <a th:href="@{/cadastroAcolhido/relatorio/pdf}" class="btn btn-danger" target="_blank">
+                            <i class="fas fa-file-pdf"></i> PDF Geral
+                        </a>
+                        <a th:href="@{/cadastroAcolhido/relatorio/excel}" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Excel Geral
+                        </a>
+                    </span>
+                    <!-- Relatórios de Permanência -->
+                    <span th:if="${diasPermanencia != null}">
+                        <a th:href="@{/cadastroAcolhido/relatorio/permanencia/pdf(dias=${diasPermanencia})}" class="btn btn-danger" target="_blank">
+                            <i class="fas fa-file-pdf"></i> PDF Permanência
+                        </a>
+                        <a th:href="@{/cadastroAcolhido/relatorio/permanencia/excel(dias=${diasPermanencia})}" class="btn btn-success">
+                            <i class="fas fa-file-excel"></i> Excel Permanência
+                        </a>
+                    </span>
                 </div>
             </div>
         </div>
@@ -82,21 +110,29 @@
                 <table class="table table-bordered" th:if="${not #lists.isEmpty(acolhidos)}">
                 <thead class="thead-blue">
                 <tr>
-                    <th>Nome</th>
-                    <th>Idade</th>
-                    <th>Sexo</th>
-                    <th>Data de Ingresso</th>
-                    <th>Data de Saída</th>
+                    <th class="sortable" data-sort="nome">Nome</th>
+                    <th class="sortable" data-sort="idade">Idade</th>
+                    <th class="sortable" data-sort="sexo">Sexo</th>
+                    <th class="sortable" data-sort="dataIngresso">Data de Ingresso</th>
+                    <th class="sortable" data-sort="dataSaida">Data de Saída</th>
                     <th>Ações</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="acolhido : ${acolhidos}">
+                <tr th:each="acolhido : ${acolhidos}"
+                    th:classappend="${acolhido.dataSaidaProxima ? 'table-warning' : ''}">
                     <td th:text="${acolhido.nome}">João da Silva</td>
                     <td th:text="${acolhido.idade}">35</td>
                     <td th:text="${acolhido.sexo}">Masculino</td>
                     <td th:text="${#temporals.format(acolhido.dataIngresso, 'dd/MM/yyyy')}">10/09/2025</td>
-                    <td th:text="${#temporals.format(acolhido.dataSaida, 'dd/MM/yyyy')}">10/11/2025</td>
+                    <td>
+                        <span th:if="${acolhido.dataSaida != null}" 
+                              th:text="${#temporals.format(acolhido.dataSaida, 'dd/MM/yyyy')}"
+                              th:classappend="${acolhido.dataSaidaProxima ? 'badge badge-warning' : ''}">
+                            10/11/2025
+                        </span>
+                        <span th:if="${acolhido.dataSaida == null}">-</span>
+                    </td>
                     <td>
                         <a th:href="@{/cadastroAcolhido/editar/{id}(id=${acolhido.id})}" class="btn btn-warning btn-sm">
                             <i class="fas fa-edit"></i>
@@ -111,6 +147,16 @@
                 </tbody>
             </table>
             </div>
+            
+            <div class="mt-3" th:if="${not #lists.isEmpty(acolhidos)}">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Legenda:</strong> Linhas destacadas em <span class="badge badge-warning">amarelo</span> indicam acolhidos com data de saída prevista nos próximos 7 dias.
+                </small>
+            </div>
+            
+            <!-- Paginação -->
+            <div th:replace="fragments/pagination :: pagination"></div>
         </div>
     </div>
 </section>

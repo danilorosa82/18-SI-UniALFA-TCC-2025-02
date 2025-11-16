@@ -110,6 +110,7 @@
         /* Barra lateral - REDUZIDA */
         .main-sidebar {
             width: 220px !important; /* aumentado de 200px para 220px */
+            overflow-x: hidden !important;
         }
         
         /* Ajustar content-wrapper para compensar sidebar menor */
@@ -856,6 +857,29 @@ $(document).ready(function() {
         
         // Disparar evento customizado para atualizar gráficos
         window.dispatchEvent(new Event('darkModeToggled'));
+    });
+});
+
+// Desabilitar autocomplete em todos os inputs, selects e textareas
+document.addEventListener('DOMContentLoaded', function() {
+    // Desabilitar em todos os formulários
+    document.querySelectorAll('form').forEach(function(form) {
+        form.setAttribute('autocomplete', 'off');
+    });
+    
+    // Desabilitar em todos os inputs
+    document.querySelectorAll('input').forEach(function(input) {
+        input.setAttribute('autocomplete', 'off');
+    });
+    
+    // Desabilitar em todos os selects
+    document.querySelectorAll('select').forEach(function(select) {
+        select.setAttribute('autocomplete', 'off');
+    });
+    
+    // Desabilitar em todos os textareas
+    document.querySelectorAll('textarea').forEach(function(textarea) {
+        textarea.setAttribute('autocomplete', 'off');
     });
 });
 </script>
