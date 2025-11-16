@@ -6,12 +6,12 @@
 <body>
 
 <!-- Fragmento de paginação reutilizável -->
-<div th:fragment="pagination(page, size, baseUrl, extraParams)">
+<div th:fragment="pagination">
     <div class="row mt-3" th:if="${page != null and page.totalPages > 0}">
         <div class="col-md-6">
             <div class="form-inline">
                 <label class="mr-2">Itens por página:</label>
-                <select class="form-control form-control-sm page-size-selector">
+                <select class="form-control form-control-sm page-size-selector" th:attr="data-size=${size}">
                     <option value="5" th:selected="${size == 5}">5</option>
                     <option value="10" th:selected="${size == 10}">10</option>
                     <option value="15" th:selected="${size == 15}">15</option>
@@ -25,14 +25,14 @@
         </div>
         <div class="col-md-6">
             <nav aria-label="Page navigation">
-                <ul class="pagination justify-content-end mb-0">
+                <ul class="pagination justify-content-end mb-0" th:with="currentPage=${page.number}">
                     <li class="page-item" th:classappend="${page.first} ? 'disabled'">
-                        <a class="page-link" th:href="@{${baseUrl}(page=0, size=${size}, ${extraParams})}" aria-label="Primeira">
+                        <a class="page-link page-nav-link" th:attr="data-page=0" aria-label="Primeira">
                             <span aria-hidden="true">&laquo;&laquo;</span>
                         </a>
                     </li>
                     <li class="page-item" th:classappend="${page.first} ? 'disabled'">
-                        <a class="page-link" th:href="@{${baseUrl}(page=${page.number - 1}, size=${size}, ${extraParams})}" aria-label="Anterior">
+                        <a class="page-link page-nav-link" th:attr="data-page=${page.number - 1}" aria-label="Anterior">
                             <span aria-hidden="true">&laquo;</span>
                         </a>
                     </li>
@@ -40,16 +40,16 @@
                     <li class="page-item" th:each="i : ${#numbers.sequence(0, page.totalPages - 1)}"
                         th:if="${i >= (page.number - 2 < 0 ? 0 : page.number - 2) and i <= (page.number + 2 >= page.totalPages ? page.totalPages - 1 : page.number + 2)}"
                         th:classappend="${i == page.number} ? 'active'">
-                        <a class="page-link" th:href="@{${baseUrl}(page=${i}, size=${size}, ${extraParams})}" th:text="${i + 1}">1</a>
+                        <a class="page-link page-nav-link" th:attr="data-page=${i}" th:text="${i + 1}">1</a>
                     </li>
                     
                     <li class="page-item" th:classappend="${page.last} ? 'disabled'">
-                        <a class="page-link" th:href="@{${baseUrl}(page=${page.number + 1}, size=${size}, ${extraParams})}" aria-label="Próxima">
+                        <a class="page-link page-nav-link" th:attr="data-page=${page.number + 1}" aria-label="Próxima">
                             <span aria-hidden="true">&raquo;</span>
                         </a>
                     </li>
                     <li class="page-item" th:classappend="${page.last} ? 'disabled'">
-                        <a class="page-link" th:href="@{${baseUrl}(page=${page.totalPages - 1}, size=${size}, ${extraParams})}" aria-label="Última">
+                        <a class="page-link page-nav-link" th:attr="data-page=${page.totalPages - 1}" aria-label="Última">
                             <span aria-hidden="true">&raquo;&raquo;</span>
                         </a>
                     </li>
@@ -58,14 +58,28 @@
         </div>
     </div>
     
-    <script th:inline="javascript">
-        document.querySelectorAll('.page-size-selector').forEach(function(select) {
-            select.addEventListener('change', function() {
-                const size = this.value;
-                const url = new URL(window.location.href);
-                url.searchParams.set('size', size);
-                url.searchParams.set('page', '0');
-                window.location.href = url.toString();
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handler para mudança de tamanho de página
+            document.querySelectorAll('.page-size-selector').forEach(function(select) {
+                select.addEventListener('change', function() {
+                    const size = this.value;
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('size', size);
+                    url.searchParams.set('page', '0');
+                    window.location.href = url.toString();
+                });
+            });
+            
+            // Handler para navegação de página
+            document.querySelectorAll('.page-nav-link').forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('page', page);
+                    window.location.href = url.toString();
+                });
             });
         });
     </script>
@@ -73,3 +87,4 @@
 
 </body>
 </html>
+
