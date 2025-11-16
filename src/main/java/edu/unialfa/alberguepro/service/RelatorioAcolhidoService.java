@@ -310,7 +310,7 @@ public class RelatorioAcolhidoService {
 
         Row subtitleRow = sheet.createRow(rowNum++);
         Cell subtitleCell = subtitleRow.createCell(0);
-        subtitleCell.setCellValue("Relatório de Permanência Prolongada - Mais de " + dias + " dias");
+        subtitleCell.setCellValue("Relatório de Permanência Prolongada - Superior a " + dias + " dias");
         subtitleCell.setCellStyle(subtitleStyle);
         sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 5));
 

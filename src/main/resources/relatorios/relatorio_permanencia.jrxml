@@ -47,7 +47,7 @@
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="10" isItalic="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["Período: Mais de " + $P{DIAS_PERIODO} + " dias de permanência"]]></textFieldExpression>
+				<textFieldExpression><![CDATA["Período: Superior a " + $P{DIAS_PERIODO} + " dias de permanência" + ($P{DIAS_PERIODO} == 90 ? " (Limite Máximo)" : "")]]></textFieldExpression>
 			</textField>
 			
 			<line>

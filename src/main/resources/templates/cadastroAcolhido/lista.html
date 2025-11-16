@@ -32,13 +32,12 @@
                     </div>
                     <div class="col-md-3">
                         <div class="form-group">
-                            <label for="diasPermanencia">Permanência:</label>
+                            <label for="diasPermanencia">Filtrar por tempo de permanência:</label>
                             <select id="diasPermanencia" name="diasPermanencia" class="form-control">
                                 <option value="">Todos os acolhidos</option>
-                                <option value="30" th:selected="${diasPermanencia != null and diasPermanencia == 30}">Mais de 30 dias</option>
-                                <option value="60" th:selected="${diasPermanencia != null and diasPermanencia == 60}">Mais de 60 dias</option>
-                                <option value="90" th:selected="${diasPermanencia != null and diasPermanencia == 90}">Mais de 90 dias</option>
-                                <option value="120" th:selected="${diasPermanencia != null and diasPermanencia == 120}">Mais de 120 dias</option>
+                                <option value="30" th:selected="${diasPermanencia != null and diasPermanencia == 30}">Permanência superior a 30 dias</option>
+                                <option value="60" th:selected="${diasPermanencia != null and diasPermanencia == 60}">Permanência superior a 60 dias</option>
+                                <option value="90" th:selected="${diasPermanencia != null and diasPermanencia == 90}">Permanência superior a 90 dias (Limite)</option>
                             </select>
                         </div>
                     </div>
@@ -65,7 +64,9 @@
             <div class="d-flex justify-content-between align-items-center">
                 <h3 class="card-title mb-0">
                     <span th:if="${diasPermanencia == null}">Acolhidos Cadastrados</span>
-                    <span th:if="${diasPermanencia != null}">Acolhidos com Permanência Prolongada - Mais de <span th:text="${diasPermanencia}"></span> dias</span>
+                    <span th:if="${diasPermanencia != null}">Acolhidos com Permanência Superior a <span th:text="${diasPermanencia}"></span> dias 
+                        <span th:if="${diasPermanencia == 90}" class="badge badge-danger">Limite Atingido</span>
+                    </span>
                 </h3>
                 <div class="card-tools">
                     <!-- Relatórios Gerais -->
@@ -118,12 +119,20 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="acolhido : ${acolhidos}">
+                <tr th:each="acolhido : ${acolhidos}"
+                    th:classappend="${acolhido.dataSaidaProxima ? 'table-warning' : ''}">
                     <td th:text="${acolhido.nome}">João da Silva</td>
                     <td th:text="${acolhido.idade}">35</td>
                     <td th:text="${acolhido.sexo}">Masculino</td>
                     <td th:text="${#temporals.format(acolhido.dataIngresso, 'dd/MM/yyyy')}">10/09/2025</td>
-                    <td th:text="${#temporals.format(acolhido.dataSaida, 'dd/MM/yyyy')}">10/11/2025</td>
+                    <td>
+                        <span th:if="${acolhido.dataSaida != null}" 
+                              th:text="${#temporals.format(acolhido.dataSaida, 'dd/MM/yyyy')}"
+                              th:classappend="${acolhido.dataSaidaProxima ? 'badge badge-warning' : ''}">
+                            10/11/2025
+                        </span>
+                        <span th:if="${acolhido.dataSaida == null}">-</span>
+                    </td>
                     <td>
                         <a th:href="@{/cadastroAcolhido/editar/{id}(id=${acolhido.id})}" class="btn btn-warning btn-sm">
                             <i class="fas fa-edit"></i>
@@ -137,6 +146,13 @@
                 </tr>
                 </tbody>
             </table>
+            </div>
+            
+            <div class="mt-3" th:if="${not #lists.isEmpty(acolhidos)}">
+                <small class="text-muted">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Legenda:</strong> Linhas destacadas em <span class="badge badge-warning">amarelo</span> indicam acolhidos com data de saída prevista nos próximos 7 dias.
+                </small>
             </div>
         </div>
     </div>
