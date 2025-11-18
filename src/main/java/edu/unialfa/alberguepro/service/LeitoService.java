@@ -22,7 +22,7 @@ public class LeitoService {
 
         List<Long> leitosOcupadosIds = vagaRepository.findOccupiedLeitoIds();
 
-        List<Leito> todosLeitosDoQuarto = repository.findByQuartoId(quartoId);
+        List<Leito> todosLeitosDoQuarto = repository.findByQuartoIdOrderByNumeroLeitoAsc(quartoId);
 
         return todosLeitosDoQuarto.stream()
                 .filter(leito -> !leitosOcupadosIds.contains(leito.getId()))
@@ -39,7 +39,7 @@ public class LeitoService {
     }
 
     public List<Leito> buscarPorQuartoId(Long quartoId) {
-        return repository.findByQuartoId(quartoId);
+        return repository.findByQuartoIdOrderByNumeroLeitoAsc(quartoId);
     }
     
     public List<Leito> buscarLeitosDisponiveisPorQuartoId(Long quartoId) {
