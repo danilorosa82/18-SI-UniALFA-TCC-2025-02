@@ -262,7 +262,8 @@ public class CadastroAcolhido {
 
     public enum Sexo {
         Masculino,
-        Feminino
+        Feminino,
+        Outro
     }
 
     public enum Escolaridade {

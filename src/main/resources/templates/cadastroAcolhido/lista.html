@@ -10,6 +10,9 @@
         <a th:href="@{/cadastroAcolhido}" class="btn btn-primary">
             <i class="fas fa-plus"></i> Novo Acolhido
         </a>
+        <a th:href="@{/cadastroAcolhido/relatorio/estrategico-pdf}" class="btn btn-info" target="_blank">
+            <i class="fas fa-chart-line"></i> Relatório Estratégico
+        </a>
     </div>
 
     <div class="card card-primary collapsed-card mb-3">
@@ -63,8 +66,8 @@
         <div class="card-header card-header-blue">
             <div class="d-flex justify-content-between align-items-center">
                 <h3 class="card-title mb-0">
-                    <span th:if="${diasPermanencia == null}">Acolhidos Cadastrados</span>
-                    <span th:if="${diasPermanencia != null}">Acolhidos com Permanência Superior a <span th:text="${diasPermanencia}"></span> dias 
+                    <span th:if="${diasPermanencia == null}">Lista de Acolhidos Cadastrados</span>
+                    <span th:if="${diasPermanencia != null}">Lista de Acolhidos com Permanência Superior a <span th:text="${diasPermanencia}"></span> dias 
                         <span th:if="${diasPermanencia == 90}" class="badge badge-danger">Limite Atingido</span>
                     </span>
                 </h3>
@@ -111,6 +114,7 @@
                 <thead class="thead-blue">
                 <tr>
                     <th class="sortable" data-sort="nome">Nome</th>
+                    <th class="sortable" data-sort="cpf">CPF</th>
                     <th class="sortable" data-sort="idade">Idade</th>
                     <th class="sortable" data-sort="sexo">Sexo</th>
                     <th class="sortable" data-sort="dataIngresso">Data de Ingresso</th>
@@ -122,6 +126,7 @@
                 <tr th:each="acolhido : ${acolhidos}"
                     th:classappend="${acolhido.dataSaidaProxima ? 'table-warning' : ''}">
                     <td th:text="${acolhido.nome}">João da Silva</td>
+                    <td th:text="${acolhido.cpf != null and acolhido.cpf.length() > 0 ? acolhido.cpf : '-'}">123.456.789-00</td>
                     <td th:text="${acolhido.idade}">35</td>
                     <td th:text="${acolhido.sexo}">Masculino</td>
                     <td th:text="${#temporals.format(acolhido.dataIngresso, 'dd/MM/yyyy')}">10/09/2025</td>

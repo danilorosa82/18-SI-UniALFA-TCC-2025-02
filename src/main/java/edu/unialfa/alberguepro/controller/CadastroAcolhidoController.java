@@ -2,21 +2,30 @@ package edu.unialfa.alberguepro.controller;
 
 import edu.unialfa.alberguepro.model.CadastroAcolhido;
 import edu.unialfa.alberguepro.service.CadastroAcolhidoService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.Period;
-
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/cadastroAcolhido")
 public class CadastroAcolhidoController {
+
+    private static final Logger log = LoggerFactory.getLogger(CadastroAcolhidoController.class);
 
     @Autowired
     private CadastroAcolhidoService service;
@@ -440,5 +449,160 @@ public class CadastroAcolhidoController {
             return 6;
         }
         return 1;
+    }
+
+    @GetMapping("/relatorio/estrategico-pdf")
+    public ResponseEntity<byte[]> relatorioEstrategicoPdf() {
+        try {
+            List<CadastroAcolhido> todosAcolhidos = service.listarTodos();
+            
+            // RESUMO EXECUTIVO
+            long totalAcolhidos = todosAcolhidos.size();
+            long acolhidosAtivos = todosAcolhidos.stream()
+                    .filter(a -> a.getDataSaida() == null || a.getDataSaida().isAfter(LocalDate.now()))
+                    .count();
+            long acolhidosInativos = totalAcolhidos - acolhidosAtivos;
+            
+            double mediaIdade = todosAcolhidos.stream()
+                    .filter(a -> a.getIdade() != null)
+                    .mapToInt(CadastroAcolhido::getIdade)
+                    .average()
+                    .orElse(0.0);
+            
+            // DOCUMENTAÇÃO
+            long comRg = todosAcolhidos.stream().filter(a -> a.getRg() != null && !a.getRg().trim().isEmpty()).count();
+            long comCpf = todosAcolhidos.stream().filter(a -> a.getCpf() != null && !a.getCpf().trim().isEmpty()).count();
+            long comCertidao = todosAcolhidos.stream().filter(a -> a.getCertidaoNascimento() != null && !a.getCertidaoNascimento().trim().isEmpty()).count();
+            long semDocumentos = todosAcolhidos.stream()
+                    .filter(a -> (a.getRg() == null || a.getRg().trim().isEmpty()) &&
+                                (a.getCpf() == null || a.getCpf().trim().isEmpty()) &&
+                                (a.getCertidaoNascimento() == null || a.getCertidaoNascimento().trim().isEmpty()))
+                    .count();
+            
+            // GÊNERO
+            long masculino = todosAcolhidos.stream().filter(a -> a.getSexo() == CadastroAcolhido.Sexo.Masculino).count();
+            long feminino = todosAcolhidos.stream().filter(a -> a.getSexo() == CadastroAcolhido.Sexo.Feminino).count();
+            
+            // RETORNOS
+            long primeiraVez = todosAcolhidos.stream()
+                    .filter(a -> a.getVezesAcolhido() == null || a.getVezesAcolhido().equals("1") || a.getVezesAcolhido().toLowerCase().contains("primeira"))
+                    .count();
+            long retornos = totalAcolhidos - primeiraVez;
+            
+            // Preparar dados por seção
+            List<Map<String, Object>> dados = new ArrayList<>();
+            
+            // SEÇÃO: DOCUMENTAÇÃO
+            adicionarSecao(dados, "DOCUMENTAÇÃO", totalAcolhidos,
+                    Map.of(
+                        "Possuem RG", comRg,
+                        "Possuem CPF", comCpf,
+                        "Possuem Certidão de Nascimento", comCertidao,
+                        "Sem Documentação", semDocumentos
+                    ));
+            
+            // SEÇÃO: GÊNERO
+            adicionarSecao(dados, "DISTRIBUIÇÃO POR GÊNERO", totalAcolhidos,
+                    Map.of(
+                        "Masculino", masculino,
+                        "Feminino", feminino
+                    ));
+            
+            // SEÇÃO: FAIXA ETÁRIA
+            Map<String, Long> faixasEtarias = new java.util.LinkedHashMap<>();
+            faixasEtarias.put("18 a 25 anos", todosAcolhidos.stream().filter(a -> a.getIdade() != null && a.getIdade() >= 18 && a.getIdade() <= 25).count());
+            faixasEtarias.put("26 a 35 anos", todosAcolhidos.stream().filter(a -> a.getIdade() != null && a.getIdade() >= 26 && a.getIdade() <= 35).count());
+            faixasEtarias.put("36 a 45 anos", todosAcolhidos.stream().filter(a -> a.getIdade() != null && a.getIdade() >= 36 && a.getIdade() <= 45).count());
+            faixasEtarias.put("46 a 60 anos", todosAcolhidos.stream().filter(a -> a.getIdade() != null && a.getIdade() >= 46 && a.getIdade() <= 60).count());
+            faixasEtarias.put("Acima de 60 anos", todosAcolhidos.stream().filter(a -> a.getIdade() != null && a.getIdade() > 60).count());
+            adicionarSecao(dados, "DISTRIBUIÇÃO POR FAIXA ETÁRIA", totalAcolhidos, faixasEtarias);
+            
+            // SEÇÃO: ESTADO CIVIL
+            Map<String, Long> estadoCivil = todosAcolhidos.stream()
+                    .filter(a -> a.getEstadoCivil() != null)
+                    .collect(Collectors.groupingBy(a -> a.getEstadoCivil().name(), Collectors.counting()));
+            adicionarSecao(dados, "ESTADO CIVIL", totalAcolhidos, estadoCivil);
+            
+            // SEÇÃO: ESCOLARIDADE
+            Map<String, Long> escolaridade = todosAcolhidos.stream()
+                    .filter(a -> a.getEscolariade() != null)
+                    .collect(Collectors.groupingBy(a -> a.getEscolariade().name(), Collectors.counting()));
+            adicionarSecao(dados, "ESCOLARIDADE", totalAcolhidos, escolaridade);
+            
+            // SEÇÃO: ACOLHIMENTOS ANTERIORES
+            adicionarSecao(dados, "ACOLHIMENTOS ANTERIORES", totalAcolhidos,
+                    Map.of(
+                        "Primeira vez no serviço", primeiraVez,
+                        "Retornos (já acolhidos antes)", retornos
+                    ));
+            
+            // SEÇÃO: TOP 10 CIDADES DE ORIGEM
+            Map<String, Long> cidades = todosAcolhidos.stream()
+                    .filter(a -> a.getNaturalidade() != null && !a.getNaturalidade().trim().isEmpty())
+                    .collect(Collectors.groupingBy(CadastroAcolhido::getNaturalidade, Collectors.counting()))
+                    .entrySet().stream()
+                    .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                    .limit(10)
+                    .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, java.util.LinkedHashMap::new));
+            adicionarSecao(dados, "TOP 10 CIDADES DE NATURALIDADE", totalAcolhidos, cidades);
+            
+            // Carregar template
+            InputStream jrxmlStream = getClass().getResourceAsStream("/relatorios/relatorio_perfil_acolhidos.jrxml");
+            if (jrxmlStream == null) {
+                throw new RuntimeException("Template JRXML não encontrado: /relatorios/relatorio_perfil_acolhidos.jrxml");
+            }
+            net.sf.jasperreports.engine.JasperReport jasperReport = 
+                    net.sf.jasperreports.engine.JasperCompileManager.compileReport(jrxmlStream);
+            
+            // Parâmetros
+            Map<String, Object> parametros = new HashMap<>();
+            parametros.put("TOTAL_ACOLHIDOS", totalAcolhidos);
+            parametros.put("ACOLHIDOS_ATIVOS", acolhidosAtivos);
+            parametros.put("ACOLHIDOS_INATIVOS", acolhidosInativos);
+            parametros.put("MEDIA_IDADE", mediaIdade);
+            parametros.put("COM_RG", comRg);
+            parametros.put("COM_CPF", comCpf);
+            parametros.put("COM_CERTIDAO", comCertidao);
+            parametros.put("SEM_DOCUMENTOS", semDocumentos);
+            parametros.put("MASCULINO", masculino);
+            parametros.put("FEMININO", feminino);
+            parametros.put("PRIMEIRA_VEZ", primeiraVez);
+            parametros.put("RETORNOS", retornos);
+            
+            // DataSource
+            net.sf.jasperreports.engine.data.JRBeanCollectionDataSource dataSource = 
+                    new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource(dados);
+            
+            // Preencher
+            net.sf.jasperreports.engine.JasperPrint jasperPrint = 
+                    net.sf.jasperreports.engine.JasperFillManager.fillReport(jasperReport, parametros, dataSource);
+            
+            // Exportar
+            byte[] pdf = net.sf.jasperreports.engine.JasperExportManager.exportReportToPdf(jasperPrint);
+            
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
+            headers.setContentDisposition(org.springframework.http.ContentDisposition.inline()
+                    .filename("relatorio-perfil-acolhidos.pdf")
+                    .build());
+            
+            return new ResponseEntity<>(pdf, headers, org.springframework.http.HttpStatus.OK);
+            
+        } catch (Exception e) {
+            log.error("Erro ao gerar relatório estratégico de acolhidos", e);
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(("Erro: " + e.getMessage()).getBytes());
+        }
+    }
+    
+    private void adicionarSecao(List<Map<String, Object>> dados, String categoria, long total, Map<String, Long> itens) {
+        for (Map.Entry<String, Long> entry : itens.entrySet()) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("categoria", categoria);
+            item.put("descricao", entry.getKey());
+            item.put("quantidade", entry.getValue());
+            item.put("percentual", total > 0 ? (entry.getValue() * 100.0 / total) : 0.0);
+            dados.add(item);
+        }
     }
 }

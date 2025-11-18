@@ -74,6 +74,10 @@
                             <input class="form-check-input" type="radio" th:field="*{sexo}" value="Feminino">
                             <label class="form-check-label">Feminino</label>
                         </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" th:field="*{sexo}" value="Outro">
+                            <label class="form-check-label">Outro</label>
+                        </div>
                         <div th:if="${#fields.hasErrors('sexo')}" th:errors="*{sexo}" class="text-danger"></div>
                     </div>
 
