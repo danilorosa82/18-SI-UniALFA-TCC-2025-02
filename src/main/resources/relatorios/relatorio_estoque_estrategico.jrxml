@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" 
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" 
+              name="relatorio_estoque_estrategico" 
+              pageWidth="595" 
+              pageHeight="842" 
+              columnWidth="555" 
+              leftMargin="20" 
+              rightMargin="20" 
+              topMargin="20" 
+              bottomMargin="20" 
+              uuid="estoque-estrategico-uuid">
+    
+    <parameter name="TOTAL_PRODUTOS" class="java.lang.Long"/>
+    <parameter name="TOTAL_ITENS" class="java.lang.Long"/>
+    <parameter name="PRODUTOS_EM_ESTOQUE" class="java.lang.Long"/>
+    <parameter name="PRODUTOS_ZERADOS" class="java.lang.Long"/>
+    <parameter name="PRODUTOS_BAIXO_ESTOQUE" class="java.util.List"/>
+    <parameter name="PRODUTOS_VENCIMENTO" class="java.util.List"/>
+    
+    <field name="nome" class="java.lang.String"/>
+    <field name="tipo" class="java.lang.String"/>
+    <field name="quantidade" class="java.lang.Integer"/>
+    <field name="unidade" class="java.lang.String"/>
+    <field name="situacao" class="java.lang.String"/>
+    
+    <title>
+        <band height="150">
+            <staticText>
+                <reportElement x="0" y="10" width="555" height="30" uuid="title-uuid"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="18" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Relatório Estratégico de Estoque]]></text>
+            </staticText>
+            <textField pattern="dd/MM/yyyy HH:mm">
+                <reportElement x="0" y="45" width="555" height="20" uuid="date-uuid"/>
+                <textElement textAlignment="Center">
+                    <font size="10"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Gerado em: " + new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm").format(new java.util.Date())]]></textFieldExpression>
+            </textField>
+            
+            <!-- Resumo Geral -->
+            <rectangle>
+                <reportElement x="0" y="75" width="555" height="70" backcolor="#F0F0F0" uuid="summary-bg"/>
+            </rectangle>
+            <staticText>
+                <reportElement x="10" y="80" width="150" height="15" uuid="label1"/>
+                <textElement><font size="9" isBold="true"/></textElement>
+                <text><![CDATA[Total de Produtos:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="160" y="80" width="80" height="15" uuid="field1"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$P{TOTAL_PRODUTOS}]]></textFieldExpression>
+            </textField>
+            
+            <staticText>
+                <reportElement x="10" y="100" width="150" height="15" uuid="label2"/>
+                <textElement><font size="9" isBold="true"/></textElement>
+                <text><![CDATA[Total de Itens:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="160" y="100" width="80" height="15" uuid="field2"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$P{TOTAL_ITENS}]]></textFieldExpression>
+            </textField>
+            
+            <staticText>
+                <reportElement x="295" y="80" width="150" height="15" uuid="label3"/>
+                <textElement><font size="9" isBold="true"/></textElement>
+                <text><![CDATA[Produtos em Estoque:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="445" y="80" width="100" height="15" uuid="field3"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$P{PRODUTOS_EM_ESTOQUE}]]></textFieldExpression>
+            </textField>
+            
+            <staticText>
+                <reportElement x="295" y="100" width="150" height="15" uuid="label4"/>
+                <textElement><font size="9" isBold="true"/></textElement>
+                <text><![CDATA[Produtos Zerados:]]></text>
+            </staticText>
+            <textField>
+                <reportElement x="445" y="100" width="100" height="15" uuid="field4"/>
+                <textElement><font size="9"/></textElement>
+                <textFieldExpression><![CDATA[$P{PRODUTOS_ZERADOS}]]></textFieldExpression>
+            </textField>
+            
+            <staticText>
+                <reportElement x="10" y="125" width="535" height="20" uuid="section-title"/>
+                <box><pen lineWidth="0.5"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="11" isBold="true"/>
+                </textElement>
+                <text><![CDATA[PRODUTOS COM ESTOQUE BAIXO (≤ 10 unidades)]]></text>
+            </staticText>
+        </band>
+    </title>
+    
+    <columnHeader>
+        <band height="30">
+            <staticText>
+                <reportElement mode="Opaque" x="0" y="0" width="200" height="30" backcolor="#007BFF" forecolor="#FFFFFF" uuid="ch1"/>
+                <box><pen lineWidth="0.5"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Nome]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" x="200" y="0" width="100" height="30" backcolor="#007BFF" forecolor="#FFFFFF" uuid="ch2"/>
+                <box><pen lineWidth="0.5"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Tipo]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" x="300" y="0" width="80" height="30" backcolor="#007BFF" forecolor="#FFFFFF" uuid="ch3"/>
+                <box><pen lineWidth="0.5"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Quantidade]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" x="380" y="0" width="80" height="30" backcolor="#007BFF" forecolor="#FFFFFF" uuid="ch4"/>
+                <box><pen lineWidth="0.5"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Unidade]]></text>
+            </staticText>
+            <staticText>
+                <reportElement mode="Opaque" x="460" y="0" width="95" height="30" backcolor="#007BFF" forecolor="#FFFFFF" uuid="ch5"/>
+                <box><pen lineWidth="0.5"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Situação]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+    
+    <detail>
+        <band height="25">
+            <textField>
+                <reportElement x="0" y="0" width="200" height="25" uuid="d1"/>
+                <box><pen lineWidth="0.5"/></box>
+                <textElement textAlignment="Left" verticalAlignment="Middle">
+                    <font size="9"/>
+                    <paragraph leftIndent="5"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{nome}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="200" y="0" width="100" height="25" uuid="d2"/>
+                <box><pen lineWidth="0.5"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{tipo}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="300" y="0" width="80" height="25" uuid="d3"/>
+                <box><pen lineWidth="0.5"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{quantidade}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="380" y="0" width="80" height="25" uuid="d4"/>
+                <box><pen lineWidth="0.5"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{unidade}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="460" y="0" width="95" height="25" uuid="d5"/>
+                <box><pen lineWidth="0.5"/></box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="9" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{situacao}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+    
+    <pageFooter>
+        <band height="30">
+            <textField>
+                <reportElement x="0" y="10" width="350" height="15" uuid="footer1"/>
+                <textElement>
+                    <font size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA["AlberguePro - Relatório Estratégico de Estoque"]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="450" y="10" width="80" height="15" uuid="footer2"/>
+                <textElement textAlignment="Right">
+                    <font size="8"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+</jasperReport>

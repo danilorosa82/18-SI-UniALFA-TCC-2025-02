@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.core.io.InputStreamResource;
@@ -29,8 +30,14 @@ import jakarta.validation.Valid;
 import net.sf.jasperreports.engine.JRException;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/estoque")
@@ -417,5 +424,193 @@ public class EstoqueController {
         return ResponseEntity.ok().headers(headers)
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(new InputStreamResource(bis));
+    }
+
+    @GetMapping("/relatorio/estrategico-pdf")
+    public ResponseEntity<byte[]> relatorioEstrategicoPdf() {
+        try {
+            List<Produto> todosProdutos = produtoRepository.findAll();
+            
+            // Produtos com estoque baixo
+            List<Produto> produtosBaixoEstoque = todosProdutos.stream()
+                    .filter(p -> p.getQuantidade() <= 10)
+                    .sorted(Comparator.comparing(Produto::getQuantidade))
+                    .collect(Collectors.toList());
+            
+            // Totais gerais
+            long totalProdutos = todosProdutos.size();
+            long totalItens = todosProdutos.stream().mapToLong(Produto::getQuantidade).sum();
+            long produtosEmEstoque = todosProdutos.stream().filter(p -> p.getQuantidade() > 0).count();
+            long produtosZerados = totalProdutos - produtosEmEstoque;
+            
+            // Preparar dados
+            List<Map<String, Object>> dados = new java.util.ArrayList<>();
+            for (Produto produto : produtosBaixoEstoque) {
+                Map<String, Object> item = new java.util.HashMap<>();
+                item.put("nome", produto.getNome());
+                item.put("tipo", produto.getTipo());
+                item.put("quantidade", produto.getQuantidade());
+                item.put("unidade", produto.getUnidade() != null ? produto.getUnidade().getNome() : "-");
+                
+                String situacao;
+                if (produto.getQuantidade() == 0) {
+                    situacao = "ZERADO";
+                } else if (produto.getQuantidade() <= 5) {
+                    situacao = "CRÍTICO";
+                } else {
+                    situacao = "BAIXO";
+                }
+                item.put("situacao", situacao);
+                dados.add(item);
+            }
+            
+            // Carregar template
+            InputStream jrxmlStream = getClass().getResourceAsStream("/relatorios/relatorio_estoque_estrategico.jrxml");
+            net.sf.jasperreports.engine.JasperReport jasperReport = 
+                    net.sf.jasperreports.engine.JasperCompileManager.compileReport(jrxmlStream);
+            
+            // Parâmetros
+            Map<String, Object> parametros = new java.util.HashMap<>();
+            parametros.put("TOTAL_PRODUTOS", totalProdutos);
+            parametros.put("TOTAL_ITENS", totalItens);
+            parametros.put("PRODUTOS_EM_ESTOQUE", produtosEmEstoque);
+            parametros.put("PRODUTOS_ZERADOS", produtosZerados);
+            
+            // DataSource
+            net.sf.jasperreports.engine.data.JRBeanCollectionDataSource dataSource = 
+                    new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource(dados);
+            
+            // Preencher
+            net.sf.jasperreports.engine.JasperPrint jasperPrint = 
+                    net.sf.jasperreports.engine.JasperFillManager.fillReport(jasperReport, parametros, dataSource);
+            
+            // Exportar
+            byte[] pdf = net.sf.jasperreports.engine.JasperExportManager.exportReportToPdf(jasperPrint);
+            
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("filename", "relatorio-estoque-estrategico.pdf");
+            
+            return new ResponseEntity<>(pdf, headers, org.springframework.http.HttpStatus.OK);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @GetMapping("/relatorio/estrategico-excel")
+    @ResponseBody
+    public ResponseEntity<org.springframework.core.io.Resource> relatorioEstrategicoExcel() {
+        try {
+            List<Produto> todosProdutos = produtoRepository.findAll();
+            
+            org.apache.poi.ss.usermodel.Workbook workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook();
+            
+            // Sheet 1: Resumo Geral
+            org.apache.poi.ss.usermodel.Sheet sheetResumo = workbook.createSheet("Resumo Geral");
+            criarSheetResumo(sheetResumo, todosProdutos, workbook);
+            
+            // Sheet 2: Estoque Baixo
+            org.apache.poi.ss.usermodel.Sheet sheetBaixo = workbook.createSheet("Estoque Baixo");
+            List<Produto> produtosBaixo = todosProdutos.stream()
+                    .filter(p -> p.getQuantidade() <= 10)
+                    .sorted(Comparator.comparing(Produto::getQuantidade))
+                    .collect(Collectors.toList());
+            criarSheetProdutos(sheetBaixo, produtosBaixo, "Produtos com Estoque Baixo", workbook);
+            
+            // Sheet 3: Próximos ao Vencimento
+            org.apache.poi.ss.usermodel.Sheet sheetVencimento = workbook.createSheet("Próximos Vencimento");
+            LocalDate dataLimite = LocalDate.now().plusDays(30);
+            List<Produto> produtosVencimento = todosProdutos.stream()
+                    .filter(p -> p.getDataDeVencimento() != null && 
+                                !p.getDataDeVencimento().isAfter(dataLimite))
+                    .sorted(Comparator.comparing(Produto::getDataDeVencimento))
+                    .collect(Collectors.toList());
+            criarSheetProdutos(sheetVencimento, produtosVencimento, "Produtos Próximos ao Vencimento", workbook);
+            
+            java.io.ByteArrayOutputStream outputStream = new java.io.ByteArrayOutputStream();
+            workbook.write(outputStream);
+            workbook.close();
+            
+            org.springframework.core.io.ByteArrayResource resource = 
+                    new org.springframework.core.io.ByteArrayResource(outputStream.toByteArray());
+            
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=relatorio-estoque-estrategico.xlsx")
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(resource);
+                    
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    }
+    
+    private void criarSheetResumo(org.apache.poi.ss.usermodel.Sheet sheet, List<Produto> produtos, 
+                                   org.apache.poi.ss.usermodel.Workbook workbook) {
+        org.apache.poi.ss.usermodel.CellStyle headerStyle = workbook.createCellStyle();
+        org.apache.poi.ss.usermodel.Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+        
+        int rowNum = 0;
+        org.apache.poi.ss.usermodel.Row row = sheet.createRow(rowNum++);
+        org.apache.poi.ss.usermodel.Cell cell = row.createCell(0);
+        cell.setCellValue("RESUMO GERAL DO ESTOQUE");
+        cell.setCellStyle(headerStyle);
+        
+        rowNum++;
+        row = sheet.createRow(rowNum++);
+        row.createCell(0).setCellValue("Total de Produtos:");
+        row.createCell(1).setCellValue(produtos.size());
+        
+        row = sheet.createRow(rowNum++);
+        row.createCell(0).setCellValue("Total de Itens:");
+        row.createCell(1).setCellValue(produtos.stream().mapToLong(Produto::getQuantidade).sum());
+        
+        row = sheet.createRow(rowNum++);
+        row.createCell(0).setCellValue("Produtos em Estoque:");
+        row.createCell(1).setCellValue(produtos.stream().filter(p -> p.getQuantidade() > 0).count());
+        
+        row = sheet.createRow(rowNum++);
+        row.createCell(0).setCellValue("Produtos Zerados:");
+        row.createCell(1).setCellValue(produtos.stream().filter(p -> p.getQuantidade() == 0).count());
+        
+        sheet.autoSizeColumn(0);
+        sheet.autoSizeColumn(1);
+    }
+    
+    private void criarSheetProdutos(org.apache.poi.ss.usermodel.Sheet sheet, List<Produto> produtos, 
+                                     String titulo, org.apache.poi.ss.usermodel.Workbook workbook) {
+        org.apache.poi.ss.usermodel.CellStyle headerStyle = workbook.createCellStyle();
+        org.apache.poi.ss.usermodel.Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+        headerStyle.setFillForegroundColor(org.apache.poi.ss.usermodel.IndexedColors.GREY_25_PERCENT.getIndex());
+        headerStyle.setFillPattern(org.apache.poi.ss.usermodel.FillPatternType.SOLID_FOREGROUND);
+        
+        int rowNum = 0;
+        org.apache.poi.ss.usermodel.Row headerRow = sheet.createRow(rowNum++);
+        String[] columns = {"Nome", "Tipo", "Quantidade", "Unidade", "Vencimento"};
+        for (int i = 0; i < columns.length; i++) {
+            org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columns[i]);
+            cell.setCellStyle(headerStyle);
+        }
+        
+        for (Produto produto : produtos) {
+            org.apache.poi.ss.usermodel.Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(produto.getNome());
+            row.createCell(1).setCellValue(produto.getTipo());
+            row.createCell(2).setCellValue(produto.getQuantidade());
+            row.createCell(3).setCellValue(produto.getUnidade() != null ? produto.getUnidade().getNome() : "");
+            row.createCell(4).setCellValue(produto.getDataDeVencimento() != null ? 
+                    produto.getDataDeVencimento().toString() : "");
+        }
+        
+        for (int i = 0; i < columns.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
     }
 }

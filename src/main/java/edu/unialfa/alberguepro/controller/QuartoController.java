@@ -7,11 +7,13 @@ import edu.unialfa.alberguepro.repository.VagaRepository;
 import edu.unialfa.alberguepro.service.QuartoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -128,29 +130,71 @@ public class QuartoController {
     }
 
     @GetMapping("/relatorio/ocupacao-pdf")
-    public String relatorioOcupacaoPdf(Model model) {
-        List<Quarto> quartos = quartoRepository.findAll();
-        Map<String, Long> leitosOcupadosPorQuarto = vagaRepository.countOccupiedBedsByRoom()
-                .stream()
-                .collect(Collectors.toMap(
-                        obj -> (String) obj[0],
-                        obj -> ((Number) obj[1]).longValue()
-                ));
+    public ResponseEntity<byte[]> relatorioOcupacaoPdf() {
+        try {
+            List<Quarto> quartos = quartoRepository.findAll();
+            Map<String, Long> leitosOcupadosPorQuarto = vagaRepository.countOccupiedBedsByRoom()
+                    .stream()
+                    .collect(Collectors.toMap(
+                            obj -> (String) obj[0],
+                            obj -> ((Number) obj[1]).longValue()
+                    ));
 
-        long totalLeitos = quartos.stream().mapToLong(q -> q.getLeitos().size()).sum();
-        long totalOcupados = leitosOcupadosPorQuarto.values().stream().mapToLong(Long::longValue).sum();
-        long totalLivres = totalLeitos - totalOcupados;
-        double taxaOcupacao = totalLeitos > 0 ? (totalOcupados * 100.0 / totalLeitos) : 0;
+            long totalLeitos = quartos.stream().mapToLong(q -> q.getLeitos().size()).sum();
+            long totalOcupados = leitosOcupadosPorQuarto.values().stream().mapToLong(Long::longValue).sum();
+            long totalLivres = totalLeitos - totalOcupados;
+            double taxaOcupacao = totalLeitos > 0 ? (totalOcupados * 100.0 / totalLeitos) : 0;
 
-        model.addAttribute("quartos", quartos);
-        model.addAttribute("leitosOcupadosPorQuarto", leitosOcupadosPorQuarto);
-        model.addAttribute("totalLeitos", totalLeitos);
-        model.addAttribute("totalOcupados", totalOcupados);
-        model.addAttribute("totalLivres", totalLivres);
-        model.addAttribute("taxaOcupacao", taxaOcupacao);
-        model.addAttribute("dataGeracao", java.time.LocalDateTime.now());
+            // Preparar dados para o relatório
+            List<Map<String, Object>> dados = new java.util.ArrayList<>();
+            for (Quarto quarto : quartos) {
+                Map<String, Object> item = new java.util.HashMap<>();
+                long leitosQuarto = quarto.getLeitos().size();
+                long ocupados = leitosOcupadosPorQuarto.getOrDefault(quarto.getNumeroQuarto(), 0L);
+                long livres = leitosQuarto - ocupados;
+                double taxa = leitosQuarto > 0 ? (ocupados * 100.0 / leitosQuarto) : 0;
+                
+                item.put("numeroQuarto", quarto.getNumeroQuarto());
+                item.put("totalLeitos", (int)leitosQuarto);
+                item.put("leitosOcupados", (int)ocupados);
+                item.put("leitosLivres", (int)livres);
+                item.put("taxaOcupacao", taxa);
+                dados.add(item);
+            }
 
-        return "Quarto/relatorio-ocupacao";
+            // Carregar template JRXML
+            InputStream jrxmlStream = getClass().getResourceAsStream("/relatorios/relatorio_ocupacao.jrxml");
+            net.sf.jasperreports.engine.JasperReport jasperReport = 
+                    net.sf.jasperreports.engine.JasperCompileManager.compileReport(jrxmlStream);
+
+            // Parâmetros
+            Map<String, Object> parametros = new java.util.HashMap<>();
+            parametros.put("TOTAL_LEITOS", totalLeitos);
+            parametros.put("TOTAL_OCUPADOS", totalOcupados);
+            parametros.put("TOTAL_LIVRES", totalLivres);
+            parametros.put("TAXA_OCUPACAO", taxaOcupacao);
+
+            // DataSource
+            net.sf.jasperreports.engine.data.JRBeanCollectionDataSource dataSource = 
+                    new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource(dados);
+
+            // Preencher relatório
+            net.sf.jasperreports.engine.JasperPrint jasperPrint = 
+                    net.sf.jasperreports.engine.JasperFillManager.fillReport(jasperReport, parametros, dataSource);
+
+            // Exportar para PDF
+            byte[] pdf = net.sf.jasperreports.engine.JasperExportManager.exportReportToPdf(jasperPrint);
+
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.setContentType(org.springframework.http.MediaType.APPLICATION_PDF);
+            headers.setContentDispositionFormData("filename", "relatorio-ocupacao.pdf");
+
+            return new ResponseEntity<>(pdf, headers, org.springframework.http.HttpStatus.OK);
+
+        } catch (Exception e) {
+            log.error("Erro ao gerar relatório PDF de ocupação", e);
+            return ResponseEntity.status(500).build();
+        }
     }
 
     @GetMapping("/relatorio/ocupacao-excel")
