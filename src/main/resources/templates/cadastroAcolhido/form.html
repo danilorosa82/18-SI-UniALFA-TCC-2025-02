@@ -111,8 +111,8 @@
                         <div th:if="${#fields.hasErrors('filiacao')}" th:errors="*{filiacao}" class="text-danger"></div>
                     </div>
 
-                    <a th:href="@{/cadastroAcolhido/listar}" class="btn btn-secondary">Cancelar</a>
-                    <button type="button" class="btn btn-primary" onclick="nextStep()">Próximo</button>
+                    <a th:href="@{/cadastroAcolhido/listar}" class="btn btn-danger"><i class="fas fa-times"></i> Cancelar</a>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Próximo <i class="fas fa-arrow-right"></i></button>
                 </div>
             </div>
 
@@ -157,9 +157,9 @@
                         <div th:if="${#fields.hasErrors('quantidadeFilhos')}" th:errors="*{quantidadeFilhos}" class="text-danger"></div>
                     </div>
 
-                    <a th:href="@{/cadastroAcolhido/listar}" class="btn btn-secondary">Cancelar</a>
-                    <button type="button" class="btn btn-secondary" onclick="prevStep()">Voltar</button>
-                    <button type="button" class="btn btn-primary" onclick="nextStep()">Próximo</button>
+                    <a th:href="@{/cadastroAcolhido/listar}" class="btn btn-danger"><i class="fas fa-times"></i> Cancelar</a>
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()"><i class="fas fa-arrow-left"></i> Voltar</button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Próximo <i class="fas fa-arrow-right"></i></button>
                 </div>
             </div>
 
@@ -178,9 +178,9 @@
                         <input type="text" class="form-control" id="telefoneFamiliar" th:field="*{telefoneFamiliar}" placeholder="Ex: 11999999999">
                     </div>
 
-                    <a th:href="@{/cadastroAcolhido/listar}" class="btn btn-secondary">Cancelar</a>
-                    <button type="button" class="btn btn-secondary" onclick="prevStep()">Voltar</button>
-                    <button type="button" class="btn btn-primary" onclick="nextStep()">Próximo</button>
+                    <a th:href="@{/cadastroAcolhido/listar}" class="btn btn-danger"><i class="fas fa-times"></i> Cancelar</a>
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()"><i class="fas fa-arrow-left"></i> Voltar</button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Próximo <i class="fas fa-arrow-right"></i></button>
                 </div>
             </div>
 
@@ -230,9 +230,9 @@
                         <div th:if="${#fields.hasErrors('qualBeneficio')}" th:errors="*{qualBeneficio}" class="text-danger"></div>
                     </div>
 
-                    <a th:href="@{/cadastroAcolhido/listar}" class="btn btn-secondary">Cancelar</a>
-                    <button type="button" class="btn btn-secondary" onclick="prevStep()">Voltar</button>
-                    <button type="button" class="btn btn-primary" onclick="nextStep()">Próximo</button>
+                    <a th:href="@{/cadastroAcolhido/listar}" class="btn btn-danger"><i class="fas fa-times"></i> Cancelar</a>
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()"><i class="fas fa-arrow-left"></i> Voltar</button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Próximo <i class="fas fa-arrow-right"></i></button>
                 </div>
             </div>
 
@@ -344,9 +344,9 @@
                         <div th:if="${#fields.hasErrors('qualDroga')}" th:errors="*{qualDroga}" class="text-danger"></div>
                     </div>
 
-                    <a th:href="@{/cadastroAcolhido/listar}" class="btn btn-secondary">Cancelar</a>
-                    <button type="button" class="btn btn-secondary" onclick="prevStep()">Voltar</button>
-                    <button type="button" class="btn btn-primary" onclick="nextStep()">Próximo</button>
+                    <a th:href="@{/cadastroAcolhido/listar}" class="btn btn-danger"><i class="fas fa-times"></i> Cancelar</a>
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()"><i class="fas fa-arrow-left"></i> Voltar</button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()">Próximo <i class="fas fa-arrow-right"></i></button>
                 </div>
             </div>
 
@@ -443,10 +443,17 @@
                         <div th:if="${#fields.hasErrors('dataSaida')}" th:errors="*{dataSaida}" class="text-danger"></div>
                     </div>
 
-                    <div class="card-footer">
-                        <a th:href="@{/cadastroAcolhido/listar}" class="btn btn-secondary">Cancelar</a>
-                        <button type="button" class="btn btn-secondary" onclick="prevStep()">Voltar</button>
-                        <button type="submit" class="btn btn-primary">Salvar</button>
+                <div class="card-footer">
+                    <a th:href="@{/cadastroAcolhido/listar}" class="btn btn-danger">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                    <button type="button" class="btn btn-secondary" onclick="prevStep()">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Salvar
+                    </button>
+                </div>
                     </div>
                 </div>
             </div>
