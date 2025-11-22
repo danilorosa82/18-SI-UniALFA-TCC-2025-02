@@ -28,37 +28,78 @@
             </button>
         </div>
 
-        <!-- Botões de ação -->
-        <div class="mb-3">
-            <!-- Botão pra criar patrimonio novo -->
-            <a th:href="@{/patrimonio/novo}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Novo Patrimômio
-            </a>
-        </div>
-
-        <!-- Formulário de busca pra filtrar os patrimonios -->
-        <form th:action="@{/patrimonio/pesquisar}" method="get" class="mb-4">
-            <div class="input-group">
-                <input type="text" name="filtro" class="form-control" placeholder="Buscar os patrimônios por numero..." th:value="${filtro}">
-                <div class="input-group-append">
-                    <button class="btn btn-outline-secondary" type="submit">
-                        <i class="fas fa-search"></i> Buscar
+        <!-- Filtros Colapsáveis -->
+        <div class="card card-primary collapsed-card mb-3">
+            <div class="card-header card-header-blue">
+                <h3 class="card-title">Filtros</h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-plus"></i>
                     </button>
                 </div>
             </div>
-        </form>
+            <div class="card-body" style="display: none;">
+                <form th:action="@{/patrimonio}" method="get">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="nome">Nome:</label>
+                                <input type="text" id="nome" name="nome" class="form-control" placeholder="Buscar por nome..." th:value="${nome}">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="status">Status:</label>
+                                <select id="status" name="status" class="form-control">
+                                    <option value="">Todos</option>
+                                    <option value="Em uso" th:selected="${status == 'Em uso'}">Em uso</option>
+                                    <option value="Em manutenção" th:selected="${status == 'Em manutenção'}">Em manutenção</option>
+                                    <option value="Em estoque" th:selected="${status == 'Em estoque'}">Em estoque</option>
+                                    <option value="Baixado" th:selected="${status == 'Baixado'}">Baixado</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="localAtual">Local Atual:</label>
+                                <input type="text" id="localAtual" name="localAtual" class="form-control" placeholder="Ex: Almoxarifado" th:value="${localAtual}">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <div class="btn-group btn-block">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                    <a th:href="@{/patrimonio}" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
 
-        <!-- Tabela de patrimonios -->
+        <!-- Tabela de patrimônios -->
         <div class="card">
             <div class="card-header card-header-blue">
-                <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
                     <h3 class="card-title mb-0">Lista de Patrimônios</h3>
-                    <div class="card-tools">
-                        <a th:href="@{/relatorios/patrimonio/pdf(nome=${nome}, status=${status}, localAtual=${localAtual})}" class="btn btn-danger" target="_blank">
-                            <i class="fas fa-file-pdf"></i> Gerar PDF
+                    <div class="card-tools mt-2 mt-md-0">
+                        <!-- Botão de Ação Principal -->
+                        <a th:href="@{/patrimonio/novo}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> Novo
                         </a>
-                        <a th:href="@{/relatorios/patrimonio/excel(nome=${nome}, status=${status}, localAtual=${localAtual})}" class="btn btn-success">
-                            <i class="fas fa-file-excel"></i> Gerar Excel
+                        
+                        <!-- Botões de Relatórios -->
+                        <a th:href="@{/relatorios/patrimonio/pdf(nome=${nome}, status=${status}, localAtual=${localAtual})}" class="btn btn-danger btn-sm" target="_blank">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </a>
+                        <a th:href="@{/relatorios/patrimonio/excel(nome=${nome}, status=${status}, localAtual=${localAtual})}" class="btn btn-success btn-sm">
+                            <i class="fas fa-file-excel"></i> Excel
                         </a>
                     </div>
                 </div>
@@ -96,7 +137,11 @@
                             <td th:text="${patrimonio.local_atual}"></td>
                             <td th:text="${patrimonio.observacao}"></td>
                             <td>
-                                <a th:href="@{/patrimonio/editar/{id}(id=${patrimonio.id})}" class="btn btn-warning btn-sm">
+                                <a th:href="@{/patrimonio/editar/{id}(id=${patrimonio.id})}" 
+                                   class="btn btn-warning btn-sm"
+                                   data-toggle="tooltip"
+                                   data-placement="top"
+                                   title="Editar patrimônio">
                                     <i class="fas fa-edit"></i>
                                 </a>
                             </td>
