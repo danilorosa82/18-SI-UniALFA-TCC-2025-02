@@ -73,16 +73,6 @@ public class CadastroAcolhidoController {
             result.rejectValue("cor", "campo.obrigatorio", "A cor é obrigatória.");
         }
 
-        if (acolhido.getRg() == null || acolhido.getRg().trim().isEmpty()) {
-            result.rejectValue("rg", "campo.obrigatorio", "O RG é obrigatório.");
-        } else {
-            String rgLimpo = acolhido.getRg().replaceAll("[^0-9A-Za-z]", "");
-
-            if (!rgLimpo.matches("\\d{5,9}[A-Za-z]?")) {
-                result.rejectValue("rg", "rg.invalido", "O RG informado é inválido. Deve ter entre 5 e 9 números, podendo ter uma letra no final.");
-            }
-        }
-
         String cpfLimpo = null;
         if (acolhido.getCpf() == null || acolhido.getCpf().trim().isEmpty()) {
             result.rejectValue("cpf", "campo.obrigatorio", "O CPF é obrigatório.");
@@ -128,11 +118,6 @@ public class CadastroAcolhidoController {
             } else if (acolhido.getQuantidadeFilhos() > 30) {
                 result.rejectValue("quantidadeFilhos", "quantidade.excedida", "A quantidade de filhos não pode ser maior que 30.");
             }
-        }
-
-
-        if (acolhido.getEndereco() == null || acolhido.getEndereco().trim().isEmpty()) {
-            result.rejectValue("endereco", "campo.obrigatorio", "O endereço é obrigatório.");
         }
 
         if (acolhido.getEscolaridade() == null) {
