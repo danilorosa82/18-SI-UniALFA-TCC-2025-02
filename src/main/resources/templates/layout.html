@@ -882,6 +882,14 @@ $(document).ready(function() {
                         window.location.href = '/quarto/listar';
                         return false;
                     });
+                } else if ($icon.hasClass('fa-chart-line')) {
+                    // Relatórios Estratégicos
+                    $link.off('click').on('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        window.location.href = '/relatorios/estrategicos';
+                        return false;
+                    });
                 }
             });
         }
