@@ -47,11 +47,10 @@ public class UsuarioService {
                 throw new IllegalArgumentException("Não é permitido editar outro administrador ou master.");
             }
             
-            // PERMITIR que um ADMIN se promova a MASTER (apenas editando próprio perfil)
-            // Impedir que um admin crie outro master (não sendo ele mesmo)
-            if ("MASTER".equals(usuario.getRole()) && !"MASTER".equals(usuarioExistente.getRole()) && !isSelf) {
+            // APENAS MASTER pode promover alguém para MASTER
+            if ("MASTER".equals(usuario.getRole()) && !"MASTER".equals(usuarioExistente.getRole())) {
                 if (!isMaster) {
-                    throw new IllegalArgumentException("Apenas um Master pode criar outro Master.");
+                    throw new IllegalArgumentException("Apenas um Master pode promover usuários para Master.");
                 }
             }
             

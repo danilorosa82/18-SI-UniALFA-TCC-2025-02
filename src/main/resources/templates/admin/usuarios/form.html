@@ -104,13 +104,19 @@
                                 <strong>Administrador</strong> - Acesso Completo
                             </label>
                         </div>
-                        <div class="form-check">
+                        <!-- Opção Master apenas para usuários Master -->
+                        <div class="form-check" th:if="${isMaster != null && isMaster}">
                             <input class="form-check-input" type="radio" id="roleMaster" th:field="*{role}" value="MASTER"
                                    th:classappend="${#fields.hasErrors('role')} ? 'is-invalid' : ''"
                                    required>
                             <label class="form-check-label" for="roleMaster">
                                 <strong>Master</strong> - Acesso Total (pode editar administradores)
                             </label>
+                        </div>
+                        <!-- Mensagem para Admins que não podem ver a opção Master -->
+                        <div class="alert alert-warning mt-2" th:if="${isMaster == null || !isMaster}">
+                            <i class="fas fa-info-circle"></i>
+                            <small>Apenas usuários <strong>Master</strong> podem criar ou promover para Master.</small>
                         </div>
                         <small class="form-text text-muted">
                             Selecione o nível de acesso do usuário no sistema.

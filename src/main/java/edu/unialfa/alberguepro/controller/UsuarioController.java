@@ -80,6 +80,12 @@ public class UsuarioController {
         UsuarioDTO u = new UsuarioDTO();
         u.setRole("USER"); // pré-seleciona "Usuário"
         model.addAttribute("usuario", u);
+        
+        // Verificar se é Master para mostrar opção Master
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isMaster = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_MASTER"));
+        model.addAttribute("isMaster", isMaster);
+        
         return "admin/usuarios/form"; // -> templates/admin/usuarios/form.html
     }
 
@@ -133,6 +139,12 @@ public class UsuarioController {
             // Limpar a senha para não exibir no formulário
             dto.setPassword(null);
             model.addAttribute("usuario", dto);
+            
+            // Verificar se é Master para mostrar opção Master
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            boolean isMaster = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_MASTER"));
+            model.addAttribute("isMaster", isMaster);
+            
             return "admin/usuarios/form"; // Reutiliza o mesmo formulário de cadastro
         } else {
             attributes.addFlashAttribute("errorMessage", "Usuário não encontrado.");
