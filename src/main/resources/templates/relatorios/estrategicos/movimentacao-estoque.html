@@ -157,6 +157,12 @@
                 alert('Por favor, selecione as datas de início e fim.');
                 return;
             }
+            
+            // Validar se data início não é posterior à data fim
+            if (new Date(dataInicio) > new Date(dataFim)) {
+                alert('A data de início não pode ser posterior à data de fim.');
+                return;
+            }
 
             let url = '/relatorios/estrategicos/movimentacao-estoque/pdf?dataInicio=' + dataInicio + '&dataFim=' + dataFim;
             if (tipo) {
@@ -172,6 +178,12 @@
             
             if (!dataInicio || !dataFim) {
                 alert('Por favor, selecione as datas de início e fim.');
+                return;
+            }
+            
+            // Validar se data início não é posterior à data fim
+            if (new Date(dataInicio) > new Date(dataFim)) {
+                alert('A data de início não pode ser posterior à data de fim.');
                 return;
             }
 
