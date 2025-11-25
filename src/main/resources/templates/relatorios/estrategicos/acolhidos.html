@@ -143,13 +143,10 @@
             const dataFim = document.getElementById('dataFim').value;
             
             if (!dataInicio || !dataFim) {
-                alert('Por favor, selecione as datas de início e fim.');
                 return;
             }
             
-            // Validar se data início não é posterior à data fim
             if (new Date(dataInicio) > new Date(dataFim)) {
-                alert('A data de início não pode ser posterior à data de fim.');
                 return;
             }
 
@@ -161,13 +158,10 @@
             const dataFim = document.getElementById('dataFim').value;
             
             if (!dataInicio || !dataFim) {
-                alert('Por favor, selecione as datas de início e fim.');
                 return;
             }
             
-            // Validar se data início não é posterior à data fim
             if (new Date(dataInicio) > new Date(dataFim)) {
-                alert('A data de início não pode ser posterior à data de fim.');
                 return;
             }
 

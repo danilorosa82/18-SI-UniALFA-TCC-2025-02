@@ -865,6 +865,13 @@
 <!-- Redirecionar para página de consulta quando sidebar está colapsada -->
 <script>
 $(document).ready(function() {
+    // Auto-fechar banners de alerta após 5 segundos
+    setTimeout(function() {
+        $('.alert-dismissible').fadeOut('slow', function() {
+            $(this).remove();
+        });
+    }, 5000);
+    
     // Restaurar estado da sidebar ao carregar
     const sidebarCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
     if (sidebarCollapsed) {
