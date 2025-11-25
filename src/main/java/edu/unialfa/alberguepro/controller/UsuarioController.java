@@ -166,8 +166,9 @@ public class UsuarioController {
     @PostMapping("/toggle/{id}")
     public String toggleAtivo(@PathVariable("id") Long id, RedirectAttributes attributes) {
         try {
-            usuarioService.toggleAtivo(id);
-            attributes.addFlashAttribute("successMessage", "Status do usuário alterado com sucesso!");
+            boolean novoStatus = usuarioService.toggleAtivo(id);
+            String mensagem = novoStatus ? "Usuário ativado com sucesso!" : "Usuário desativado com sucesso!";
+            attributes.addFlashAttribute("successMessage", mensagem);
         } catch (Exception e) {
             attributes.addFlashAttribute("errorMessage", "Erro ao alterar status: " + e.getMessage());
         }
