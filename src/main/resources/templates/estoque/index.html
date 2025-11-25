@@ -102,19 +102,19 @@
                         <!-- Relatórios de Estoque Geral -->
                         <span th:if="${diasVencimento == null}">
                             <a th:href="@{/estoque/relatorio/pdf(nome=${nome}, tipo=${tipo}, unidadeId=${unidade != null ? unidade.id : ''})}" class="btn btn-danger btn-sm" target="_blank">
-                                <i class="fas fa-file-pdf"></i> PDF
+                                <i class="fas fa-file-pdf"></i> Gerar PDF
                             </a>
                             <a th:href="@{/estoque/relatorio/excel(nome=${nome}, tipo=${tipo}, unidadeId=${unidade != null ? unidade.id : ''})}" class="btn btn-success btn-sm">
-                                <i class="fas fa-file-excel"></i> Excel
+                                <i class="fas fa-file-excel"></i> Gerar Excel
                             </a>
                         </span>
                         <!-- Relatórios de Vencimento -->
                         <span th:if="${diasVencimento != null}">
                             <a th:href="@{/estoque/relatorio/vencimento/pdf(dias=${diasVencimento})}" class="btn btn-danger btn-sm" target="_blank">
-                                <i class="fas fa-file-pdf"></i> PDF
+                                <i class="fas fa-file-pdf"></i> Gerar PDF
                             </a>
                             <a th:href="@{/estoque/relatorio/vencimento/excel(dias=${diasVencimento})}" class="btn btn-success btn-sm">
-                                <i class="fas fa-file-excel"></i> Excel
+                                <i class="fas fa-file-excel"></i> Gerar Excel
                             </a>
                         </span>
                     </div>
