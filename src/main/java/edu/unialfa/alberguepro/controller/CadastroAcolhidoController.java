@@ -2,13 +2,9 @@ package edu.unialfa.alberguepro.controller;
 
 import edu.unialfa.alberguepro.model.CadastroAcolhido;
 import edu.unialfa.alberguepro.service.CadastroAcolhidoService;
-import edu.unialfa.alberguepro.service.RelatorioAcolhidoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,7 +12,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.Period;
@@ -34,9 +29,6 @@ public class CadastroAcolhidoController {
 
     @Autowired
     private CadastroAcolhidoService service;
-
-    @Autowired
-    private RelatorioAcolhidoService relatorioService;
 
     @GetMapping
     public String iniciar(Model model) {
@@ -463,116 +455,6 @@ public class CadastroAcolhidoController {
             return 6;
         }
         return 1;
-    }
-
-    @GetMapping("/relatorio/pdf")
-    public ResponseEntity<byte[]> relatorioPdf(@RequestParam(required = false) String filtro,
-                                               @RequestParam(required = false) String sexo,
-                                               @RequestParam(required = false) Integer idadeMin,
-                                               @RequestParam(required = false) Integer idadeMax) {
-        try {
-            List<CadastroAcolhido> acolhidos = service.listarTodos();
-            acolhidos = aplicarFiltros(acolhidos, filtro, sexo, idadeMin, idadeMax);
-            
-            ByteArrayInputStream pdfStream = relatorioService.gerarRelatorioPdf(acolhidos);
-            byte[] pdfBytes = pdfStream.readAllBytes();
-            
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDisposition(ContentDisposition.builder("inline")
-                    .filename("acolhidos.pdf")
-                    .build());
-            
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(pdfBytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    @GetMapping("/relatorio/excel")
-    public ResponseEntity<byte[]> relatorioExcel(@RequestParam(required = false) String filtro,
-                                                  @RequestParam(required = false) String sexo,
-                                                  @RequestParam(required = false) Integer idadeMin,
-                                                  @RequestParam(required = false) Integer idadeMax) {
-        try {
-            List<CadastroAcolhido> acolhidos = service.listarTodos();
-            acolhidos = aplicarFiltros(acolhidos, filtro, sexo, idadeMin, idadeMax);
-            
-            ByteArrayInputStream excelStream = relatorioService.gerarRelatorioExcel(acolhidos);
-            byte[] excelBytes = excelStream.readAllBytes();
-            
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-            headers.setContentDisposition(ContentDisposition.builder("attachment")
-                    .filename("acolhidos.xlsx")
-                    .build());
-            
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(excelBytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    @GetMapping("/relatorio/permanencia/pdf")
-    public ResponseEntity<byte[]> relatorioPermanenciaPdf(@RequestParam Integer dias,
-                                                           @RequestParam(required = false) String filtro,
-                                                           @RequestParam(required = false) String sexo,
-                                                           @RequestParam(required = false) Integer idadeMin,
-                                                           @RequestParam(required = false) Integer idadeMax) {
-        try {
-            List<CadastroAcolhido> acolhidos = service.buscarAcolhidosPermanenciaProlongada(dias);
-            acolhidos = aplicarFiltros(acolhidos, filtro, sexo, idadeMin, idadeMax);
-            
-            ByteArrayInputStream pdfStream = relatorioService.gerarRelatorioPermanenciaPdf(acolhidos, dias);
-            byte[] pdfBytes = pdfStream.readAllBytes();
-            
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_PDF);
-            headers.setContentDisposition(ContentDisposition.builder("inline")
-                    .filename("acolhidos_permanencia.pdf")
-                    .build());
-            
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(pdfBytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    @GetMapping("/relatorio/permanencia/excel")
-    public ResponseEntity<byte[]> relatorioPermanenciaExcel(@RequestParam Integer dias,
-                                                             @RequestParam(required = false) String filtro,
-                                                             @RequestParam(required = false) String sexo,
-                                                             @RequestParam(required = false) Integer idadeMin,
-                                                             @RequestParam(required = false) Integer idadeMax) {
-        try {
-            List<CadastroAcolhido> acolhidos = service.buscarAcolhidosPermanenciaProlongada(dias);
-            acolhidos = aplicarFiltros(acolhidos, filtro, sexo, idadeMin, idadeMax);
-            
-            ByteArrayInputStream excelStream = relatorioService.gerarRelatorioPermanenciaExcel(acolhidos, dias);
-            byte[] excelBytes = excelStream.readAllBytes();
-            
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
-            headers.setContentDisposition(ContentDisposition.builder("attachment")
-                    .filename("acolhidos_permanencia.xlsx")
-                    .build());
-            
-            return ResponseEntity.ok()
-                    .headers(headers)
-                    .body(excelBytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
-        }
     }
 
     @GetMapping("/relatorio/estrategico-pdf")
