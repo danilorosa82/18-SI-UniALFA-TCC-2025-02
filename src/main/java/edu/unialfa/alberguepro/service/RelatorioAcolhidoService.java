@@ -256,6 +256,155 @@ public class RelatorioAcolhidoService {
         return style;
     }
 
+    public ByteArrayInputStream gerarRelatorioPdf(List<CadastroAcolhido> acolhidos) throws JRException {
+        List<AcolhidoDTO> acolhidosDTO = acolhidos.stream()
+                .map(AcolhidoDTO::new)
+                .collect(Collectors.toList());
+
+        InputStream inputStream = getClass().getResourceAsStream("/relatorios/relatorio_acolhido.jrxml");
+        if (inputStream == null) throw new RuntimeException("Arquivo JRXML não encontrado!");
+
+        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(acolhidosDTO);
+        JasperReport jasperReport = JasperCompileManager.compileReport(inputStream);
+
+        java.util.Map<String, Object> parameters = new java.util.HashMap<>();
+        parameters.put("TOTAL_REGISTROS", acolhidosDTO.size());
+        
+        java.time.ZoneId saoPauloZone = java.time.ZoneId.of("America/Sao_Paulo");
+        java.time.ZonedDateTime agora = java.time.ZonedDateTime.now(saoPauloZone);
+        parameters.put("DATA_EMISSAO", java.util.Date.from(agora.toInstant()));
+        parameters.put("REPORT_TIME_ZONE", java.util.TimeZone.getTimeZone(saoPauloZone));
+        parameters.put("USUARIO_EMISSOR", org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName());
+
+        JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        JasperExportManager.exportReportToPdfStream(jasperPrint, out);
+
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+
+    public ByteArrayInputStream gerarRelatorioExcel(List<CadastroAcolhido> acolhidos) throws IOException {
+        List<AcolhidoDTO> acolhidosDTO = acolhidos.stream()
+                .map(AcolhidoDTO::new)
+                .collect(Collectors.toList());
+
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Acolhidos");
+
+        CellStyle headerStyle = createHeaderStyle(workbook);
+        CellStyle titleStyle = createTitleStyle(workbook);
+        CellStyle subtitleStyle = createSubtitleStyle(workbook);
+        CellStyle dataStyle = createDataStyle(workbook);
+        CellStyle centerStyle = createCenterStyle(workbook);
+        CellStyle dateStyle = createDateStyle(workbook);
+
+        int rowNum = 0;
+
+        Row titleRow = sheet.createRow(rowNum++);
+        Cell titleCell = titleRow.createCell(0);
+        titleCell.setCellValue("AlberguePro");
+        titleCell.setCellStyle(titleStyle);
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 8));
+
+        Row subtitleRow = sheet.createRow(rowNum++);
+        Cell subtitleCell = subtitleRow.createCell(0);
+        subtitleCell.setCellValue("Relatório de Acolhidos");
+        subtitleCell.setCellStyle(subtitleStyle);
+        sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 8));
+
+        rowNum++;
+        Row infoRow1 = sheet.createRow(rowNum++);
+        Cell infoCell1 = infoRow1.createCell(0);
+        java.time.ZoneId saoPauloZone = java.time.ZoneId.of("America/Sao_Paulo");
+        java.time.ZonedDateTime agora = java.time.ZonedDateTime.now(saoPauloZone);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        infoCell1.setCellValue("Data de Emissão: " + agora.format(formatter));
+        sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 3));
+
+        Row infoRow2 = sheet.createRow(rowNum++);
+        Cell infoCell2 = infoRow2.createCell(0);
+        infoCell2.setCellValue("Usuário Emissor: " + org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName());
+        sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 3));
+
+        Row totalRow = sheet.createRow(rowNum++);
+        Cell totalCell = totalRow.createCell(0);
+        totalCell.setCellValue("Total de Registros: " + acolhidosDTO.size());
+        sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 3));
+
+        rowNum++;
+        Row headerRow = sheet.createRow(rowNum++);
+        String[] headers = {"ID", "Nome", "Data Nasc.", "Idade", "Sexo", "Naturalidade", "RG", "CPF", "Data Ingresso"};
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+        }
+
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        for (AcolhidoDTO dto : acolhidosDTO) {
+            Row row = sheet.createRow(rowNum++);
+            
+            Cell cell0 = row.createCell(0);
+            cell0.setCellValue(dto.getId());
+            cell0.setCellStyle(centerStyle);
+            
+            Cell cell1 = row.createCell(1);
+            cell1.setCellValue(dto.getNome());
+            cell1.setCellStyle(dataStyle);
+            
+            Cell cell2 = row.createCell(2);
+            if (dto.getDataNascimento() != null) {
+                cell2.setCellValue(dto.getDataNascimento().format(dateFormatter));
+            }
+            cell2.setCellStyle(dateStyle);
+            
+            Cell cell3 = row.createCell(3);
+            if (dto.getIdade() != null) {
+                cell3.setCellValue(dto.getIdade());
+            }
+            cell3.setCellStyle(centerStyle);
+            
+            Cell cell4 = row.createCell(4);
+            cell4.setCellValue(dto.getSexo());
+            cell4.setCellStyle(centerStyle);
+            
+            Cell cell5 = row.createCell(5);
+            cell5.setCellValue(dto.getNaturalidade());
+            cell5.setCellStyle(dataStyle);
+            
+            Cell cell6 = row.createCell(6);
+            cell6.setCellValue(dto.getRg());
+            cell6.setCellStyle(dataStyle);
+            
+            Cell cell7 = row.createCell(7);
+            cell7.setCellValue(dto.getCpf());
+            cell7.setCellStyle(dataStyle);
+            
+            Cell cell8 = row.createCell(8);
+            if (dto.getDataIngresso() != null) {
+                cell8.setCellValue(dto.getDataIngresso().format(dateFormatter));
+            }
+            cell8.setCellStyle(dateStyle);
+        }
+
+        sheet.setColumnWidth(0, 1500);
+        sheet.setColumnWidth(1, 8000);
+        sheet.setColumnWidth(2, 3000);
+        sheet.setColumnWidth(3, 2000);
+        sheet.setColumnWidth(4, 2500);
+        sheet.setColumnWidth(5, 5000);
+        sheet.setColumnWidth(6, 3500);
+        sheet.setColumnWidth(7, 4000);
+        sheet.setColumnWidth(8, 3500);
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        workbook.write(out);
+        workbook.close();
+
+        return new ByteArrayInputStream(out.toByteArray());
+    }
+
     public ByteArrayInputStream gerarRelatorioPermanenciaPdf(List<CadastroAcolhido> acolhidos, Integer dias) throws JRException {
         InputStream inputStream = getClass().getResourceAsStream("/relatorios/relatorio_permanencia.jrxml");
         if (inputStream == null) throw new RuntimeException("Arquivo JRXML não encontrado!");
