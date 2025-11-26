@@ -2,9 +2,13 @@ package edu.unialfa.alberguepro.controller;
 
 import edu.unialfa.alberguepro.model.CadastroAcolhido;
 import edu.unialfa.alberguepro.service.CadastroAcolhidoService;
+import edu.unialfa.alberguepro.service.RelatorioAcolhidoService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,6 +16,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.Period;
@@ -29,6 +34,9 @@ public class CadastroAcolhidoController {
 
     @Autowired
     private CadastroAcolhidoService service;
+
+    @Autowired
+    private RelatorioAcolhidoService relatorioService;
 
     @GetMapping
     public String iniciar(Model model) {
@@ -262,6 +270,9 @@ public class CadastroAcolhidoController {
 
     @GetMapping("listar")
     public String listar(@RequestParam(required = false) String filtro,
+                        @RequestParam(required = false) String sexo,
+                        @RequestParam(required = false) Integer idadeMin,
+                        @RequestParam(required = false) Integer idadeMax,
                         @RequestParam(required = false) Integer diasPermanencia,
                         @RequestParam(defaultValue = "0") int page,
                         @RequestParam(defaultValue = "15") int size,
@@ -277,11 +288,8 @@ public class CadastroAcolhidoController {
         if (diasPermanencia != null && diasPermanencia > 0) {
             List<CadastroAcolhido> acolhidos = service.buscarAcolhidosPermanenciaProlongada(diasPermanencia);
             
-            if (filtro != null && !filtro.trim().isEmpty()) {
-                acolhidos = acolhidos.stream()
-                    .filter(a -> a.getNome().toLowerCase().contains(filtro.toLowerCase()))
-                    .toList();
-            }
+            // Aplicar filtros adicionais
+            acolhidos = aplicarFiltros(acolhidos, filtro, sexo, idadeMin, idadeMax);
             
             acolhidos = ordenarLista(acolhidos, sort, direction);
             
@@ -292,21 +300,42 @@ public class CadastroAcolhidoController {
                 org.springframework.data.domain.PageRequest.of(page, size, sortObj), acolhidos.size());
         } else {
             org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sortObj);
-            if (filtro != null && !filtro.trim().isEmpty()) {
-                pageResult = service.buscarPorNomePaginado(filtro, pageable);
-            } else {
-                pageResult = service.listarTodosPaginado(pageable);
-            }
+            pageResult = service.buscarComFiltros(filtro, sexo, idadeMin, idadeMax, pageable);
         }
 
         model.addAttribute("acolhidos", pageResult.getContent());
         model.addAttribute("page", pageResult);
         model.addAttribute("filtro", filtro);
+        model.addAttribute("sexo", sexo);
+        model.addAttribute("idadeMin", idadeMin);
+        model.addAttribute("idadeMax", idadeMax);
         model.addAttribute("diasPermanencia", diasPermanencia);
         model.addAttribute("size", size);
         model.addAttribute("sort", sort);
         model.addAttribute("dir", dir);
         return "cadastroAcolhido/lista";
+    }
+    
+    private List<CadastroAcolhido> aplicarFiltros(List<CadastroAcolhido> acolhidos, String filtro, String sexo, Integer idadeMin, Integer idadeMax) {
+        java.util.stream.Stream<CadastroAcolhido> stream = acolhidos.stream();
+        
+        if (filtro != null && !filtro.trim().isEmpty()) {
+            stream = stream.filter(a -> a.getNome().toLowerCase().contains(filtro.toLowerCase()));
+        }
+        
+        if (sexo != null && !sexo.trim().isEmpty()) {
+            stream = stream.filter(a -> sexo.equalsIgnoreCase(a.getSexo().name()));
+        }
+        
+        if (idadeMin != null) {
+            stream = stream.filter(a -> a.getIdade() != null && a.getIdade() >= idadeMin);
+        }
+        
+        if (idadeMax != null) {
+            stream = stream.filter(a -> a.getIdade() != null && a.getIdade() <= idadeMax);
+        }
+        
+        return stream.collect(java.util.stream.Collectors.toList());
     }
     
     private List<CadastroAcolhido> ordenarLista(List<CadastroAcolhido> lista, String campo, org.springframework.data.domain.Sort.Direction direction) {
@@ -436,10 +465,126 @@ public class CadastroAcolhidoController {
         return 1;
     }
 
+    @GetMapping("/relatorio/pdf")
+    public ResponseEntity<byte[]> relatorioPdf(@RequestParam(required = false) String filtro,
+                                               @RequestParam(required = false) String sexo,
+                                               @RequestParam(required = false) Integer idadeMin,
+                                               @RequestParam(required = false) Integer idadeMax) {
+        try {
+            List<CadastroAcolhido> acolhidos = service.listarTodos();
+            acolhidos = aplicarFiltros(acolhidos, filtro, sexo, idadeMin, idadeMax);
+            
+            ByteArrayInputStream pdfStream = relatorioService.gerarRelatorioPdf(acolhidos);
+            byte[] pdfBytes = pdfStream.readAllBytes();
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDisposition(ContentDisposition.builder("inline")
+                    .filename("acolhidos.pdf")
+                    .build());
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(pdfBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/relatorio/excel")
+    public ResponseEntity<byte[]> relatorioExcel(@RequestParam(required = false) String filtro,
+                                                  @RequestParam(required = false) String sexo,
+                                                  @RequestParam(required = false) Integer idadeMin,
+                                                  @RequestParam(required = false) Integer idadeMax) {
+        try {
+            List<CadastroAcolhido> acolhidos = service.listarTodos();
+            acolhidos = aplicarFiltros(acolhidos, filtro, sexo, idadeMin, idadeMax);
+            
+            ByteArrayInputStream excelStream = relatorioService.gerarRelatorioExcel(acolhidos);
+            byte[] excelBytes = excelStream.readAllBytes();
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            headers.setContentDisposition(ContentDisposition.builder("attachment")
+                    .filename("acolhidos.xlsx")
+                    .build());
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(excelBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/relatorio/permanencia/pdf")
+    public ResponseEntity<byte[]> relatorioPermanenciaPdf(@RequestParam Integer dias,
+                                                           @RequestParam(required = false) String filtro,
+                                                           @RequestParam(required = false) String sexo,
+                                                           @RequestParam(required = false) Integer idadeMin,
+                                                           @RequestParam(required = false) Integer idadeMax) {
+        try {
+            List<CadastroAcolhido> acolhidos = service.buscarAcolhidosPermanenciaProlongada(dias);
+            acolhidos = aplicarFiltros(acolhidos, filtro, sexo, idadeMin, idadeMax);
+            
+            ByteArrayInputStream pdfStream = relatorioService.gerarRelatorioPermanenciaPdf(acolhidos, dias);
+            byte[] pdfBytes = pdfStream.readAllBytes();
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDisposition(ContentDisposition.builder("inline")
+                    .filename("acolhidos_permanencia.pdf")
+                    .build());
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(pdfBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/relatorio/permanencia/excel")
+    public ResponseEntity<byte[]> relatorioPermanenciaExcel(@RequestParam Integer dias,
+                                                             @RequestParam(required = false) String filtro,
+                                                             @RequestParam(required = false) String sexo,
+                                                             @RequestParam(required = false) Integer idadeMin,
+                                                             @RequestParam(required = false) Integer idadeMax) {
+        try {
+            List<CadastroAcolhido> acolhidos = service.buscarAcolhidosPermanenciaProlongada(dias);
+            acolhidos = aplicarFiltros(acolhidos, filtro, sexo, idadeMin, idadeMax);
+            
+            ByteArrayInputStream excelStream = relatorioService.gerarRelatorioPermanenciaExcel(acolhidos, dias);
+            byte[] excelBytes = excelStream.readAllBytes();
+            
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            headers.setContentDisposition(ContentDisposition.builder("attachment")
+                    .filename("acolhidos_permanencia.xlsx")
+                    .build());
+            
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(excelBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
     @GetMapping("/relatorio/estrategico-pdf")
-    public ResponseEntity<byte[]> relatorioEstrategicoPdf() {
+    public ResponseEntity<byte[]> relatorioEstrategicoPdf(@RequestParam(required = false) String filtro,
+                                                           @RequestParam(required = false) String sexo,
+                                                           @RequestParam(required = false) Integer idadeMin,
+                                                           @RequestParam(required = false) Integer idadeMax) {
         try {
             List<CadastroAcolhido> todosAcolhidos = service.listarTodos();
+            
+            // Aplicar filtros se fornecidos
+            todosAcolhidos = aplicarFiltros(todosAcolhidos, filtro, sexo, idadeMin, idadeMax);
             
             // RESUMO EXECUTIVO
             long totalAcolhidos = todosAcolhidos.size();
