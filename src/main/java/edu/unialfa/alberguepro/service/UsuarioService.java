@@ -205,9 +205,9 @@ public class UsuarioService {
             throw new IllegalArgumentException("Apenas um Master pode alterar a senha de outro Master.");
         }
 
-        // Exige senha atual se o próprio usuário estiver alterando ou se não for master
-        boolean mustValidateCurrent = isSelf || (!isMaster);
-        if (mustValidateCurrent) {
+        // Exige senha atual SOMENTE se o próprio usuário estiver alterando sua senha
+        // Admin/Master alterando senha de outros não precisam informar senha atual
+        if (isSelf) {
             if (senhaAtual == null || !passwordEncoder.matches(senhaAtual, usuario.getPassword())) {
                 throw new IllegalArgumentException("Senha atual incorreta.");
             }

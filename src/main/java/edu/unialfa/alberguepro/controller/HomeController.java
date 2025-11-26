@@ -41,7 +41,11 @@ public class HomeController {
     private LeitoRepository leitoRepository;
 
     @GetMapping("/")
-    public String index(Model model) {
+    public String index(Model model, @RequestParam(required = false) String error) {
+        if ("acesso-negado".equals(error)) {
+            model.addAttribute("errorMessage", "Você não tem permissão para acessar esta página.");
+        }
+        
         DashboardDTO dashboardDTO = new DashboardDTO();
 
         long totalAcolhidosAtivos = cadastroAcolhidoRepository.count();
@@ -112,6 +116,14 @@ public class HomeController {
         model.addAttribute("produtosBaixoEstoque", new PagedListHolder<>(produtosBaixoEstoque));
 
         return "index";
+    }
+    
+    @GetMapping("/home")
+    public String home(@RequestParam(required = false) String error) {
+        if ("acesso-negado".equals(error)) {
+            return "redirect:/?error=acesso-negado";
+        }
+        return "redirect:/";
     }
 
     @GetMapping("/login")
