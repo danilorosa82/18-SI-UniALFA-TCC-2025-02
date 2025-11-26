@@ -107,9 +107,9 @@
                     dataInicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
                     break;
                 case 'ultimomes':
-                    dataFim = hoje;
-                    dataInicio = new Date(hoje);
-                    dataInicio.setMonth(hoje.getMonth() - 1);
+                    const mesPassado = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+                    dataInicio = mesPassado;
+                    dataFim = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
                     break;
                 case 'trimestre':
                     dataFim = hoje;

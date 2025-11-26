@@ -225,6 +225,12 @@ public class RelatorioEstrategicoService {
             movimentacoes = movimentacaoEstoqueRepository.findByDataMovimentacaoBetween(dataHoraInicio, dataHoraFim);
         }
 
+        // Se não houver movimentações, gerar PDF com mensagem
+        if (movimentacoes.isEmpty()) {
+            return gerarPdfSemDados("Movimentação de Estoque", dataInicio, dataFim, 
+                "Não houve movimentações de estoque no período selecionado.");
+        }
+
         InputStream inputStream = getClass().getResourceAsStream("/relatorios/relatorio_movimentacao_estoque.jrxml");
         if (inputStream == null) throw new RuntimeException("Arquivo JRXML não encontrado!");
 
@@ -598,6 +604,44 @@ public class RelatorioEstrategicoService {
         DataFormat format = workbook.createDataFormat();
         style.setDataFormat(format.getFormat("0.0%"));
         return style;
+    }
+
+    private ByteArrayInputStream gerarPdfSemDados(String tituloRelatorio, LocalDate dataInicio, LocalDate dataFim, String mensagem) {
+        try {
+            Document document = new Document(PageSize.A4);
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            PdfWriter.getInstance(document, out);
+            
+            document.open();
+            
+            // Título
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.DARK_GRAY);
+            Paragraph title = new Paragraph("Relatório de " + tituloRelatorio, titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+            
+            // Período
+            com.itextpdf.text.Font normalFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            Paragraph periodo = new Paragraph("Período: " + dataInicio.format(formatter) + " a " + dataFim.format(formatter), normalFont);
+            periodo.setAlignment(Element.ALIGN_CENTER);
+            periodo.setSpacingAfter(30);
+            document.add(periodo);
+            
+            // Mensagem
+            com.itextpdf.text.Font messageFont = FontFactory.getFont(FontFactory.HELVETICA, 14, BaseColor.BLUE);
+            Paragraph message = new Paragraph(mensagem, messageFont);
+            message.setAlignment(Element.ALIGN_CENTER);
+            message.setSpacingBefore(50);
+            document.add(message);
+            
+            document.close();
+            return new ByteArrayInputStream(out.toByteArray());
+            
+        } catch (DocumentException e) {
+            throw new RuntimeException("Erro ao gerar PDF sem dados", e);
+        }
     }
 
     // ==================== RELATÓRIO DE EVOLUÇÃO DE OCUPAÇÃO ====================
