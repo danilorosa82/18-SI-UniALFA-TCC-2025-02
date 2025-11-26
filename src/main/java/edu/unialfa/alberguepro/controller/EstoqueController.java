@@ -205,14 +205,31 @@ public class EstoqueController {
     @GetMapping("/baixa")
     public String darBaixaForm(@RequestParam(value = "filtro", required = false) String filtro,
         @RequestParam(value = "tipo", required = false) String tipo,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "15") int size,
+        @RequestParam(defaultValue = "nome") String sort,
+        @RequestParam(defaultValue = "asc") String dir,
         Model model) {
-        List<Produto> produtos;
+        
+        org.springframework.data.domain.Sort.Direction direction = dir.equals("desc") ? 
+            org.springframework.data.domain.Sort.Direction.DESC : org.springframework.data.domain.Sort.Direction.ASC;
+        org.springframework.data.domain.Sort sortObj = org.springframework.data.domain.Sort.by(direction, sort);
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sortObj);
+        
+        org.springframework.data.domain.Page<Produto> pageResult;
         if ((filtro != null && !filtro.isEmpty()) || (tipo != null && !tipo.isEmpty())) {
-            produtos = produtoRepository.findByNomeContainingIgnoreCaseAndTipoContainingIgnoreCase(filtro, tipo);
+            String filtroValue = (filtro != null) ? filtro : "";
+            String tipoValue = (tipo != null) ? tipo : "";
+            pageResult = produtoRepository.findByNomeContainingIgnoreCaseAndTipoContainingIgnoreCase(filtroValue, tipoValue, pageable);
         } else {
-            produtos = produtoRepository.findAll();
+            pageResult = produtoRepository.findAll(pageable);
         }
-        model.addAttribute("produtos", produtos);
+        
+        model.addAttribute("produtos", pageResult.getContent());
+        model.addAttribute("page", pageResult);
+        model.addAttribute("size", size);
+        model.addAttribute("sort", sort);
+        model.addAttribute("dir", dir);
         model.addAttribute("filtro", filtro);
         model.addAttribute("tipo", tipo);
         return "estoque/baixa";
