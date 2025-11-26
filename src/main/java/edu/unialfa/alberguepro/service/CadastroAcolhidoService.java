@@ -56,4 +56,34 @@ public class CadastroAcolhidoService {
     public List<CadastroAcolhido> listarAcolhidosSemLeitoAtivo() {
         return repository.findAcolhidosSemLeitoAtivo();
     }
+
+    public Page<CadastroAcolhido> buscarComFiltros(String nome, String sexo, Integer idadeMin, Integer idadeMax, Pageable pageable) {
+        List<CadastroAcolhido> todosAcolhidos = repository.findAll();
+        
+        java.util.stream.Stream<CadastroAcolhido> stream = todosAcolhidos.stream();
+        
+        if (nome != null && !nome.trim().isEmpty()) {
+            stream = stream.filter(a -> a.getNome().toLowerCase().contains(nome.toLowerCase()));
+        }
+        
+        if (sexo != null && !sexo.trim().isEmpty()) {
+            stream = stream.filter(a -> sexo.equalsIgnoreCase(a.getSexo().name()));
+        }
+        
+        if (idadeMin != null) {
+            stream = stream.filter(a -> a.getIdade() != null && a.getIdade() >= idadeMin);
+        }
+        
+        if (idadeMax != null) {
+            stream = stream.filter(a -> a.getIdade() != null && a.getIdade() <= idadeMax);
+        }
+        
+        List<CadastroAcolhido> filtrados = stream.collect(java.util.stream.Collectors.toList());
+        
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), filtrados.size());
+        List<CadastroAcolhido> paginatedList = filtrados.subList(start, end);
+        
+        return new org.springframework.data.domain.PageImpl<>(paginatedList, pageable, filtrados.size());
+    }
 }
