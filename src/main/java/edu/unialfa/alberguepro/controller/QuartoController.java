@@ -117,7 +117,6 @@ public class QuartoController {
 
     @GetMapping("/pesquisar")
     public String pesquisaForm(@RequestParam(value = "filtro", required = false) String filtro,
-                              @RequestParam(value = "capacidadeMin", required = false) Integer capacidadeMin,
                               @RequestParam(value = "disponibilidade", required = false) String disponibilidade,
                               @RequestParam(defaultValue = "0") int page,
                               @RequestParam(defaultValue = "15") int size,
@@ -130,12 +129,11 @@ public class QuartoController {
         org.springframework.data.domain.Sort sortObj = org.springframework.data.domain.Sort.by(direction, sort);
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sortObj);
         
-        org.springframework.data.domain.Page<Quarto> pageResult = service.buscarComFiltros(filtro, capacidadeMin, disponibilidade, pageable);
+        org.springframework.data.domain.Page<Quarto> pageResult = service.buscarComFiltros(filtro, null, disponibilidade, pageable);
         
         model.addAttribute("quartos", pageResult.getContent());
         model.addAttribute("page", pageResult);
         model.addAttribute("filtro", filtro);
-        model.addAttribute("capacidadeMin", capacidadeMin);
         model.addAttribute("disponibilidade", disponibilidade);
         model.addAttribute("size", size);
         model.addAttribute("sort", sort);

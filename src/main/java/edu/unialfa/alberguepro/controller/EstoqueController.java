@@ -280,6 +280,13 @@ public class EstoqueController {
         }
 
         List<Produto> produtos = produtoRepository.findAll(spec);
+        
+        if (produtos.isEmpty()) {
+            return ResponseEntity.badRequest()
+                .body(new InputStreamResource(new ByteArrayInputStream(
+                    "Erro: Nenhum resultado encontrado com os filtros aplicados.".getBytes())));
+        }
+        
         ByteArrayInputStream bis = relatorioService.gerarRelatorioPdf(produtos);
 
         HttpHeaders headers = new HttpHeaders();
@@ -311,6 +318,13 @@ public class EstoqueController {
         }
 
         List<Produto> produtos = produtoRepository.findAll(spec);
+        
+        if (produtos.isEmpty()) {
+            return ResponseEntity.badRequest()
+                .body(new InputStreamResource(new ByteArrayInputStream(
+                    "Erro: Nenhum resultado encontrado com os filtros aplicados.".getBytes())));
+        }
+        
         ByteArrayInputStream bis = relatorioService.gerarRelatorioExcel(produtos);
 
         HttpHeaders headers = new HttpHeaders();
@@ -327,7 +341,11 @@ public class EstoqueController {
     @GetMapping("/historico")
     public String verHistorico(Model model,
         @RequestParam(required = false) String nomeProduto,
-        @RequestParam(required = false) String tipo) {
+        @RequestParam(required = false) String tipo,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "15") int size,
+        @RequestParam(defaultValue = "dataMovimentacao") String sort,
+        @RequestParam(defaultValue = "desc") String dir) {
         
         Specification<edu.unialfa.alberguepro.model.MovimentacaoEstoque> spec = Specification.where(null);
 
@@ -345,9 +363,21 @@ public class EstoqueController {
             }
         }
 
-        model.addAttribute("movimentacoes", movimentacaoEstoqueRepository.findAll(spec, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "dataMovimentacao")));
+        org.springframework.data.domain.Sort.Direction direction = dir.equals("asc") ? 
+            org.springframework.data.domain.Sort.Direction.ASC : org.springframework.data.domain.Sort.Direction.DESC;
+        org.springframework.data.domain.Sort sortObj = org.springframework.data.domain.Sort.by(direction, sort);
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sortObj);
+        
+        org.springframework.data.domain.Page<edu.unialfa.alberguepro.model.MovimentacaoEstoque> pageResult = 
+            movimentacaoEstoqueRepository.findAll(spec, pageable);
+        
+        model.addAttribute("movimentacoes", pageResult.getContent());
+        model.addAttribute("page", pageResult);
         model.addAttribute("nomeProduto", nomeProduto);
         model.addAttribute("tipo", tipo);
+        model.addAttribute("size", size);
+        model.addAttribute("sort", sort);
+        model.addAttribute("dir", dir);
         
         return "estoque/historico";
     }
@@ -374,6 +404,13 @@ public class EstoqueController {
         }
 
         List<edu.unialfa.alberguepro.model.MovimentacaoEstoque> movimentacoes = movimentacaoEstoqueRepository.findAll(spec, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "dataMovimentacao"));
+        
+        if (movimentacoes.isEmpty()) {
+            return ResponseEntity.badRequest()
+                .body(new InputStreamResource(new ByteArrayInputStream(
+                    "Erro: Nenhuma movimentação encontrada com os filtros aplicados.".getBytes())));
+        }
+        
         ByteArrayInputStream bis = relatorioService.gerarRelatorioMovimentacaoPdf(movimentacoes);
 
         HttpHeaders headers = new HttpHeaders();
@@ -405,6 +442,13 @@ public class EstoqueController {
         }
 
         List<edu.unialfa.alberguepro.model.MovimentacaoEstoque> movimentacoes = movimentacaoEstoqueRepository.findAll(spec, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "dataMovimentacao"));
+        
+        if (movimentacoes.isEmpty()) {
+            return ResponseEntity.badRequest()
+                .body(new InputStreamResource(new ByteArrayInputStream(
+                    "Erro: Nenhuma movimentação encontrada com os filtros aplicados.".getBytes())));
+        }
+        
         ByteArrayInputStream bis = relatorioService.gerarRelatorioMovimentacaoExcel(movimentacoes);
 
         HttpHeaders headers = new HttpHeaders();

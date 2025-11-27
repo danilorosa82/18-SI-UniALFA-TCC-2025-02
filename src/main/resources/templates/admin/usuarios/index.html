@@ -138,20 +138,22 @@
                             </td>
                             <td th:text="${usuario.dataCriacao != null ? #temporals.format(usuario.dataCriacao, 'dd/MM/yyyy HH:mm') : 'N/A'}">01/01/2025 10:00</td>
                             <td>
-                                <!-- Botão de ativar/desativar - desabilitado se admin tentando gerenciar master -->
-                                <button th:if="${isAdmin && !isMaster && usuario.role == 'MASTER'}" 
+                                <!-- Botão de ativar/desativar - desabilitado se admin tentando gerenciar master ou outro admin -->
+                                <button th:if="${(isAdmin && !isMaster && usuario.role == 'MASTER') || 
+                                                 (isAdmin && !isMaster && usuario.role == 'ADMIN' && usuario.username != usernameLogado)}" 
                                         type="button"
                                         th:classappend="${usuario.ativo ? 'btn-outline-success' : 'btn-outline-danger'}"
                                         class="btn btn-sm disabled"
                                         style="width: 45px; opacity: 0.5; cursor: not-allowed;"
                                         data-toggle="tooltip"
                                         data-placement="top"
-                                        title="Apenas Masters podem ativar/desativar outros Masters">
+                                        th:title="${usuario.role == 'MASTER' ? 'Apenas Masters podem ativar/desativar outros Masters' : 'Administradores não podem ativar/desativar outros administradores'}">
                                     <i th:classappend="${usuario.ativo ? 'fas fa-toggle-off' : 'fas fa-toggle-on'}"></i>
                                 </button>
                                 
                                 <!-- Botão de ativar/desativar - habilitado -->
-                                <form th:if="${!(isAdmin && !isMaster && usuario.role == 'MASTER')}" 
+                                <form th:if="${!((isAdmin && !isMaster && usuario.role == 'MASTER') || 
+                                                 (isAdmin && !isMaster && usuario.role == 'ADMIN' && usuario.username != usernameLogado))}" 
                                       th:action="@{/admin/usuarios/toggle/{id}(id=${usuario.id})}" method="post" style="display: inline-block;">
                                     <button type="submit"
                                             th:classappend="${usuario.ativo ? 'btn-outline-success' : 'btn-outline-danger'}"
