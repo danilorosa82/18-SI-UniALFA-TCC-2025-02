@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -110,23 +111,19 @@ public class RelatorioEstrategicoController {
                 .body(new InputStreamResource(bis));
     }
 
-    @GetMapping("/patrimonio")
-    public String patrimonio(Model model) {
-        model.addAttribute("dataInicio", LocalDate.now().minusYears(1));
-        model.addAttribute("dataFim", LocalDate.now());
-        return "relatorios/estrategicos/patrimonio";
+    @GetMapping("/vagas")
+    public String vagas(Model model) {
+        return "relatorios/estrategicos/evolucao-ocupacao";
     }
 
-    @GetMapping("/patrimonio/pdf")
-    public ResponseEntity<InputStreamResource> gerarRelatorioPatrimonioPdf(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
-            @RequestParam(required = false) String status) throws JRException {
+    @GetMapping("/evolucao-ocupacao/pdf")
+    public ResponseEntity<InputStreamResource> gerarRelatorioEvolucaoOcupacaoPdf(
+            @RequestParam String periodo) throws IOException {
         
-        ByteArrayInputStream bis = service.gerarRelatorioPatrimonioPorPeriodoPdf(dataInicio, dataFim, status);
+        ByteArrayInputStream bis = service.gerarRelatorioEvolucaoOcupacaoPdf(periodo);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "inline; filename=relatorio_patrimonio_periodo.pdf");
+        headers.add("Content-Disposition", "inline; filename=evolucao_ocupacao_" + periodo + ".pdf");
 
         return ResponseEntity.ok()
                 .headers(headers)
@@ -134,16 +131,14 @@ public class RelatorioEstrategicoController {
                 .body(new InputStreamResource(bis));
     }
 
-    @GetMapping("/patrimonio/excel")
-    public ResponseEntity<InputStreamResource> gerarRelatorioPatrimonioExcel(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim,
-            @RequestParam(required = false) String status) throws IOException {
+    @GetMapping("/evolucao-ocupacao/excel")
+    public ResponseEntity<InputStreamResource> gerarRelatorioEvolucaoOcupacaoExcel(
+            @RequestParam String periodo) throws IOException {
         
-        ByteArrayInputStream bis = service.gerarRelatorioPatrimonioPorPeriodoExcel(dataInicio, dataFim, status);
+        ByteArrayInputStream bis = service.gerarRelatorioEvolucaoOcupacaoExcel(periodo);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=relatorio_patrimonio_periodo.xlsx");
+        headers.add("Content-Disposition", "attachment; filename=evolucao_ocupacao_" + periodo + ".xlsx");
 
         return ResponseEntity.ok()
                 .headers(headers)

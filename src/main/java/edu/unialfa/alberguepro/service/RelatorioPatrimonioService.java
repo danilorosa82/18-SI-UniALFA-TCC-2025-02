@@ -1,51 +1,53 @@
 package edu.unialfa.alberguepro.service;
 
-import edu.unialfa.alberguepro.model.Usuario;
-import edu.unialfa.alberguepro.repository.UsuarioRepository;
+import edu.unialfa.alberguepro.model.ControlePatrimonio;
+import edu.unialfa.alberguepro.repository.ControlePatrimonioRepository;
+import edu.unialfa.alberguepro.repository.PatrimonioSpecification;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
-public class RelatorioUsuarioPatrimonioService {
+public class RelatorioPatrimonioService {
 
     @Autowired
-    private UsuarioRepository usuarioRepository;
+    private ControlePatrimonioRepository repository;
 
-    public ByteArrayInputStream gerarRelatorioUsuarioPdf() throws JRException {
-        List<Usuario> usuarios = usuarioRepository.findAll();
-        
-        InputStream inputStream = getClass().getResourceAsStream("/relatorios/relatorio_usuario.jrxml");
-        if (inputStream == null) throw new RuntimeException("Arquivo JRXML não encontrado!");
+    public ByteArrayInputStream gerarRelatorioPdf(String nome, String status, String localAtual) throws JRException {
+        List<ControlePatrimonio> patrimonios = buscarPatrimoniosComFiltros(nome, status, localAtual);
 
-        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(usuarios);
+        InputStream inputStream = getClass().getResourceAsStream("/relatorios/relatorio_patrimonio.jrxml");
+        if (inputStream == null) throw new RuntimeException("Arquivo JRXML de patrimônio não encontrado!");
+
+        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(patrimonios);
         JasperReport jasperReport = JasperCompileManager.compileReport(inputStream);
+
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("TOTAL_PATRIMONIOS", patrimonios.size());
         
-        int totalUsuarios = usuarios.size();
-        long usuariosAtivos = usuarios.stream().filter(Usuario::isAtivo).count();
-        
-        java.util.Map<String, Object> parameters = new java.util.HashMap<>();
-        parameters.put("TOTAL_USUARIOS", totalUsuarios);
-        parameters.put("USUARIOS_ATIVOS", (int)usuariosAtivos);
-        
-        java.time.ZoneId saoPauloZone = java.time.ZoneId.of("America/Sao_Paulo");
-        java.time.ZonedDateTime agora = java.time.ZonedDateTime.now(saoPauloZone);
+        ZoneId saoPauloZone = ZoneId.of("America/Sao_Paulo");
+        ZonedDateTime agora = ZonedDateTime.now(saoPauloZone);
         parameters.put("DATA_EMISSAO", java.util.Date.from(agora.toInstant()));
         parameters.put("REPORT_TIME_ZONE", java.util.TimeZone.getTimeZone(saoPauloZone));
-        parameters.put("USUARIO_EMISSOR", SecurityContextHolder.getContext().getAuthentication().getName());
-        
+        parameters.put("USUARIO_EMISSOR", org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName());
+
         JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -54,11 +56,11 @@ public class RelatorioUsuarioPatrimonioService {
         return new ByteArrayInputStream(out.toByteArray());
     }
 
-    public ByteArrayInputStream gerarRelatorioUsuarioExcel() throws IOException {
-        List<Usuario> usuarios = usuarioRepository.findAll();
+    public ByteArrayInputStream gerarRelatorioExcel(String nome, String status, String localAtual) throws IOException {
+        List<ControlePatrimonio> patrimonios = buscarPatrimoniosComFiltros(nome, status, localAtual);
 
         Workbook workbook = new XSSFWorkbook();
-        Sheet sheet = workbook.createSheet("Usuários");
+        Sheet sheet = workbook.createSheet("Patrimônios");
 
         CellStyle headerStyle = createHeaderStyle(workbook);
         CellStyle titleStyle = createTitleStyle(workbook);
@@ -68,92 +70,107 @@ public class RelatorioUsuarioPatrimonioService {
         CellStyle dateStyle = createDateStyle(workbook);
 
         int rowNum = 0;
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
 
+        // Título
         Row titleRow = sheet.createRow(rowNum++);
         Cell titleCell = titleRow.createCell(0);
         titleCell.setCellValue("AlberguePro");
         titleCell.setCellStyle(titleStyle);
-        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 4));
+        sheet.addMergedRegion(new CellRangeAddress(0, 0, 0, 6));
 
+        // Subtítulo
         Row subtitleRow = sheet.createRow(rowNum++);
         Cell subtitleCell = subtitleRow.createCell(0);
-        subtitleCell.setCellValue("Relatório de Usuários");
+        subtitleCell.setCellValue("Relatório de Patrimônios");
         subtitleCell.setCellStyle(subtitleStyle);
-        sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 4));
+        sheet.addMergedRegion(new CellRangeAddress(1, 1, 0, 6));
 
+        // Informações
         rowNum++;
         Row infoRow1 = sheet.createRow(rowNum++);
-        Cell infoCell1 = infoRow1.createCell(0);
-        java.time.ZoneId saoPauloZone = java.time.ZoneId.of("America/Sao_Paulo");
-        java.time.ZonedDateTime agora = java.time.ZonedDateTime.now(saoPauloZone);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-        infoCell1.setCellValue("Data de Emissão: " + agora.format(formatter));
-        sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 2));
+        ZoneId saoPauloZone = ZoneId.of("America/Sao_Paulo");
+        ZonedDateTime agora = ZonedDateTime.now(saoPauloZone);
+        infoRow1.createCell(0).setCellValue("Data de Emissão: " + agora.format(dateTimeFormatter));
+        sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 3));
 
-        Cell infoCell2 = infoRow1.createCell(3);
-        infoCell2.setCellValue("Usuário: " + SecurityContextHolder.getContext().getAuthentication().getName());
-        sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 3, 4));
+        Cell userCell = infoRow1.createCell(4);
+        userCell.setCellValue("Usuário: " + org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication().getName());
+        sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 4, 6));
 
         Row infoRow2 = sheet.createRow(rowNum++);
-        Cell totalCell = infoRow2.createCell(0);
-        totalCell.setCellValue("Total de Usuários: " + usuarios.size());
-        sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 2));
-
-        Cell ativosCell = infoRow2.createCell(3);
-        long usuariosAtivos = usuarios.stream().filter(Usuario::isAtivo).count();
-        ativosCell.setCellValue("Usuários Ativos: " + usuariosAtivos);
-        sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 3, 4));
+        infoRow2.createCell(0).setCellValue("Total de Patrimônios: " + patrimonios.size());
+        sheet.addMergedRegion(new CellRangeAddress(rowNum-1, rowNum-1, 0, 6));
 
         rowNum++;
 
+        // Cabeçalho
         Row headerRow = sheet.createRow(rowNum++);
-        String[] headers = {"ID", "Username", "Role", "Ativo", "Data Criação"};
+        String[] headers = {"Nome", "Nº Patrimônio", "Data Aquisição", "Local Atual", "Status", "Observação"};
         for (int i = 0; i < headers.length; i++) {
             Cell cell = headerRow.createCell(i);
             cell.setCellValue(headers[i]);
             cell.setCellStyle(headerStyle);
         }
 
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        for (Usuario usuario : usuarios) {
+        // Dados
+        for (ControlePatrimonio patrimonio : patrimonios) {
             Row row = sheet.createRow(rowNum++);
             
-            Cell cell0 = row.createCell(0);
-            cell0.setCellValue(usuario.getId());
-            cell0.setCellStyle(centerStyle);
+            row.createCell(0).setCellValue(patrimonio.getNome());
+            row.getCell(0).setCellStyle(dataStyle);
             
-            Cell cell1 = row.createCell(1);
-            cell1.setCellValue(usuario.getUsername());
-            cell1.setCellStyle(dataStyle);
+            row.createCell(1).setCellValue(patrimonio.getPatrimonio());
+            row.getCell(1).setCellStyle(centerStyle);
             
             Cell cell2 = row.createCell(2);
-            cell2.setCellValue(usuario.getRole());
-            cell2.setCellStyle(centerStyle);
-            
-            Cell cell3 = row.createCell(3);
-            cell3.setCellValue(usuario.isAtivo() ? "Sim" : "Não");
-            cell3.setCellStyle(centerStyle);
-            
-            Cell cell4 = row.createCell(4);
-            if (usuario.getDataCriacao() != null) {
-                cell4.setCellValue(usuario.getDataCriacao().format(dateTimeFormatter));
+            if (patrimonio.getData_aquisicao() != null) {
+                cell2.setCellValue(patrimonio.getData_aquisicao().format(dateFormatter));
             }
-            cell4.setCellStyle(dateStyle);
+            cell2.setCellStyle(dateStyle);
+            
+            row.createCell(3).setCellValue(patrimonio.getLocal_atual());
+            row.getCell(3).setCellStyle(dataStyle);
+            
+            row.createCell(4).setCellValue(patrimonio.getStatus());
+            row.getCell(4).setCellStyle(centerStyle);
+            
+            row.createCell(5).setCellValue(patrimonio.getObservacao() != null ? patrimonio.getObservacao() : "");
+            row.getCell(5).setCellStyle(dataStyle);
         }
 
-        sheet.setColumnWidth(0, 1500);
-        sheet.setColumnWidth(1, 6000);
-        sheet.setColumnWidth(2, 4000);
-        sheet.setColumnWidth(3, 2500);
-        sheet.setColumnWidth(4, 4500);
+        // Ajustar largura das colunas
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        workbook.write(out);
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
         workbook.close();
 
-        return new ByteArrayInputStream(out.toByteArray());
+        return new ByteArrayInputStream(outputStream.toByteArray());
     }
 
+    private List<ControlePatrimonio> buscarPatrimoniosComFiltros(String nome, String status, String localAtual) {
+        Specification<ControlePatrimonio> spec = Specification.where(null);
+
+        if (nome != null && !nome.trim().isEmpty()) {
+            spec = spec.and(PatrimonioSpecification.comNome(nome));
+        }
+
+        if (status != null && !status.trim().isEmpty()) {
+            spec = spec.and(PatrimonioSpecification.comStatus(status));
+        }
+
+        if (localAtual != null && !localAtual.trim().isEmpty()) {
+            spec = spec.and(PatrimonioSpecification.comLocalAtual(localAtual));
+        }
+
+        return repository.findAll(spec);
+    }
+
+    // Métodos auxiliares para estilos Excel
     private CellStyle createHeaderStyle(Workbook workbook) {
         CellStyle style = workbook.createCellStyle();
         style.setFillForegroundColor(IndexedColors.GREY_25_PERCENT.getIndex());
@@ -166,7 +183,6 @@ public class RelatorioUsuarioPatrimonioService {
         style.setVerticalAlignment(VerticalAlignment.CENTER);
         Font font = workbook.createFont();
         font.setBold(true);
-        font.setFontHeightInPoints((short) 10);
         style.setFont(font);
         return style;
     }
@@ -177,7 +193,7 @@ public class RelatorioUsuarioPatrimonioService {
         style.setVerticalAlignment(VerticalAlignment.CENTER);
         Font font = workbook.createFont();
         font.setBold(true);
-        font.setFontHeightInPoints((short) 20);
+        font.setFontHeightInPoints((short) 16);
         style.setFont(font);
         return style;
     }
@@ -188,7 +204,7 @@ public class RelatorioUsuarioPatrimonioService {
         style.setVerticalAlignment(VerticalAlignment.CENTER);
         Font font = workbook.createFont();
         font.setBold(true);
-        font.setFontHeightInPoints((short) 16);
+        font.setFontHeightInPoints((short) 12);
         style.setFont(font);
         return style;
     }

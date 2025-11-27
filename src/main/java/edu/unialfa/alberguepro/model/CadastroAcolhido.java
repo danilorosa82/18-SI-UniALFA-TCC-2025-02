@@ -37,6 +37,8 @@ public class CadastroAcolhido {
     private String rg;
     private String cpf;
     private String certidaoNascimento;
+    
+    @jakarta.validation.constraints.Pattern(regexp = "^[a-zA-ZÀ-ÿ\\s]*$", message = "Filiação deve conter apenas letras")
     private String filiacao;
 
     @Enumerated(EnumType.STRING)

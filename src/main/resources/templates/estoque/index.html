@@ -65,10 +65,10 @@
                             <div class="form-group">
                                 <label>&nbsp;</label>
                                 <div class="btn-group btn-block">
-                                    <button type="submit" class="btn btn-primary" style="width: 60%;">
+                                    <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-search"></i> Filtrar
                                     </button>
-                                    <a th:href="@{/estoque}" class="btn btn-secondary" style="width: 40%;">
+                                    <a th:href="@{/estoque}" class="btn btn-secondary">
                                         <i class="fas fa-times"></i> Limpar
                                     </a>
                                 </div>
@@ -102,19 +102,19 @@
                         <!-- Relatórios de Estoque Geral -->
                         <span th:if="${diasVencimento == null}">
                             <a th:href="@{/estoque/relatorio/pdf(nome=${nome}, tipo=${tipo}, unidadeId=${unidade != null ? unidade.id : ''})}" class="btn btn-danger btn-sm" target="_blank">
-                                <i class="fas fa-file-pdf"></i> PDF
+                                <i class="fas fa-file-pdf"></i> Gerar PDF
                             </a>
                             <a th:href="@{/estoque/relatorio/excel(nome=${nome}, tipo=${tipo}, unidadeId=${unidade != null ? unidade.id : ''})}" class="btn btn-success btn-sm">
-                                <i class="fas fa-file-excel"></i> Excel
+                                <i class="fas fa-file-excel"></i> Gerar Excel
                             </a>
                         </span>
                         <!-- Relatórios de Vencimento -->
                         <span th:if="${diasVencimento != null}">
                             <a th:href="@{/estoque/relatorio/vencimento/pdf(dias=${diasVencimento})}" class="btn btn-danger btn-sm" target="_blank">
-                                <i class="fas fa-file-pdf"></i> PDF
+                                <i class="fas fa-file-pdf"></i> Gerar PDF
                             </a>
                             <a th:href="@{/estoque/relatorio/vencimento/excel(dias=${diasVencimento})}" class="btn btn-success btn-sm">
-                                <i class="fas fa-file-excel"></i> Excel
+                                <i class="fas fa-file-excel"></i> Gerar Excel
                             </a>
                         </span>
                     </div>
@@ -142,20 +142,42 @@
                     <tbody>
                         <!-- Loop pra criar uma linha pra cada produto -->
                         <!-- Se a qtd for 0, a linha fica amarela -->
-                        <tr th:each="produto : ${produtos}" th:classappend="${produto.quantidade == 0 ? 'table-warning' : ''}">
-                            <!-- Mostra os dados do produto -->
-                            <td th:text="${produto.nome}">Arroz</td>
+                        <!-- Se o produto estiver vencido, a linha fica vermelha -->
+                        <!-- Se o produto estiver próximo ao vencimento (< 3 dias), a linha fica amarela -->
+                        <tr th:each="produto : ${produtos}" 
+                            th:classappend="${produto.vencido ? 'table-danger-expiration' : (produto.proximoDoVencimento ? 'table-warning-expiration' : (produto.quantidade == 0 ? 'table-warning' : ''))}">
+                            <!-- Mostra os dados do produto com ícone de alerta -->
+                            <td>
+                                <span th:if="${produto.vencido}" class="text-danger mr-1" title="Produto Vencido">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </span>
+                                <span th:if="${produto.proximoDoVencimento and !produto.vencido}" class="text-warning mr-1" title="Vence em breve">
+                                    <i class="fas fa-clock"></i>
+                                </span>
+                                <span th:if="${produto.quantidade == 0 and !produto.vencido and !produto.proximoDoVencimento}" class="text-warning mr-1" title="Estoque Esgotado">
+                                    <i class="fas fa-box-open"></i>
+                                </span>
+                                <span th:text="${produto.nome}">Arroz</span>
+                            </td>
                             <td th:text="${produto.tipo}">Alimento</td>
                             <td>
                                 <span th:text="${produto.quantidade}">50</span>
                                 <!-- Se a qtd for 0, mostra a badge "Esgotado" -->
-                                <span th:if="${produto.quantidade == 0}" class="badge bg-danger">Esgotado</span>
+                                <span th:if="${produto.quantidade == 0}" class="badge bg-danger ml-1">Esgotado</span>
                             </td>
                             <td th:text="${produto.unidade.nome}">kg</td>
                             <!-- Formata a data pra o padrão brasileiro ou mostra "Não Perecível" -->
                             <td>
                                 <span th:if="${produto.naoPerecivel == true or produto.dataDeVencimento == null}" class="badge badge-info">Não Perecível</span>
-                                <span th:if="${produto.naoPerecivel != true and produto.dataDeVencimento != null}" th:text="${#temporals.format(produto.dataDeVencimento, 'dd/MM/yyyy')}">15/10/2025</span>
+                                <span th:if="${produto.naoPerecivel != true and produto.dataDeVencimento != null}">
+                                    <span th:text="${#temporals.format(produto.dataDeVencimento, 'dd/MM/yyyy')}">15/10/2025</span>
+                                    <span th:if="${produto.vencido}" class="badge bg-danger ml-1">
+                                        <i class="fas fa-exclamation-triangle"></i> Vencido
+                                    </span>
+                                    <span th:if="${produto.proximoDoVencimento and !produto.vencido}" class="badge bg-warning ml-1" style="color: #000 !important;">
+                                        <i class="fas fa-clock"></i> Vence em breve
+                                    </span>
+                                </span>
                             </td>
                             <td>
                                 <!-- Botão pra editar o produto -->

@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests((requests) -> requests
                                                 .requestMatchers("/webjars/**", "/login", "/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "MASTER")
                         .anyRequest().authenticated()
                 )
                 .formLogin((form) -> form
@@ -58,6 +58,12 @@ public class SecurityConfig {
                 .logout((logout) -> logout
                         .logoutSuccessUrl("/login?logout")
                         .permitAll()
+                )
+                .exceptionHandling((exception) -> exception
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            // Redirecionar para o dashboard com mensagem de erro
+                            response.sendRedirect("/home?error=acesso-negado");
+                        })
                 );
 
         return http.build();

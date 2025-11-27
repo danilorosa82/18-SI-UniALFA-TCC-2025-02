@@ -42,10 +42,10 @@
                             <div class="form-group">
                                 <label>&nbsp;</label>
                                 <div class="btn-group btn-block">
-                                    <button type="submit" class="btn btn-primary" style="width: 60%;">
+                                    <button type="submit" class="btn btn-primary">
                                         <i class="fas fa-search"></i> Filtrar
                                     </button>
-                                    <a th:href="@{/estoque/historico}" class="btn btn-secondary" style="width: 40%;">
+                                    <a th:href="@{/estoque/historico}" class="btn btn-secondary">
                                         <i class="fas fa-times"></i> Limpar
                                     </a>
                                 </div>
@@ -61,55 +61,60 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <h3 class="card-title mb-0">Lista de Histórico de Movimentações</h3>
                     <div class="card-tools">
-                        <a th:href="@{/estoque/historico/relatorio/pdf(nomeProduto=${nomeProduto}, tipo=${tipo})}" class="btn btn-danger" target="_blank">
+                        <a th:href="@{/estoque/historico/relatorio/pdf(nomeProduto=${nomeProduto}, tipo=${tipo})}" class="btn btn-danger btn-sm" target="_blank">
                             <i class="fas fa-file-pdf"></i> Gerar PDF
                         </a>
-                        <a th:href="@{/estoque/historico/relatorio/excel(nomeProduto=${nomeProduto}, tipo=${tipo})}" class="btn btn-success">
+                        <a th:href="@{/estoque/historico/relatorio/excel(nomeProduto=${nomeProduto}, tipo=${tipo})}" class="btn btn-success btn-sm">
                             <i class="fas fa-file-excel"></i> Gerar Excel
                         </a>
-                        <a th:href="@{/estoque}" class="btn btn-warning" style="color: black;">Voltar para o Estoque</a>
+                        <a th:href="@{/estoque}" class="btn btn-warning btn-sm" style="color: black;">Voltar para o Estoque</a>
                     </div>
                 </div>
             </div>
             <div class="card-body">
-                <table class="table table-bordered table-striped">
-                    <thead class="thead-blue">
-                        <tr>
-                            <th>Data e Hora</th>
-                            <th>Produto</th>
-                            <th>Tipo</th>
-                            <th>Qtd. Movida</th>
-                            <th>Qtd. Anterior</th>
-                            <th>Qtd. Posterior</th>
-                            <th>Usuário</th>
-                            <th>Observação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="mov : ${movimentacoes}">
-                            <td th:text="${#temporals.format(mov.dataMovimentacao, 'dd/MM/yyyy HH:mm')}"></td>
-                            <td th:text="${mov.produto != null ? mov.produto.nome : 'Produto Excluído'}"></td>
-                            <td>
-                                <span th:switch="${mov.tipo.name()}" class="badge"
-                                    th:classappend=
-                                        "${mov.tipo.name() == 'ENTRADA' ? 'badge-success' : 
-                                        (mov.tipo.name() == 'SAIDA' ? 'badge-warning' : 
-                                        (mov.tipo.name() == 'AJUSTE_POSITIVO' ? 'badge-info' : 
-                                        (mov.tipo.name() == 'AJUSTE_NEGATIVO' ? 'badge-secondary' : 'badge-danger')))}">
-                                    <span th:text="${mov.tipo.name().replace('_', ' ')}"></span>
-                                </span>
-                            </td>
-                            <td th:text="${mov.quantidadeMovimentada}"></td>
-                            <td th:text="${mov.quantidadeAnterior}"></td>
-                            <td th:text="${mov.quantidadePosterior}"></td>
-                            <td th:text="${mov.usuario != null ? mov.usuario.username : 'N/A'}"></td>
-                            <td th:text="${mov.observacao}"></td>
-                        </tr>
-                        <tr th:if="${#lists.isEmpty(movimentacoes)}">
-                            <td colspan="8" class="text-center">Nenhuma movimentação registrada.</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="thead-blue">
+                            <tr>
+                                <th class="sortable" data-sort="dataMovimentacao">Data e Hora</th>
+                                <th>Produto</th>
+                                <th class="sortable" data-sort="tipo">Tipo</th>
+                                <th class="sortable" data-sort="quantidadeMovimentada">Qtd. Movida</th>
+                                <th>Qtd. Anterior</th>
+                                <th>Qtd. Posterior</th>
+                                <th>Usuário</th>
+                                <th>Observação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="mov : ${movimentacoes}">
+                                <td th:text="${#temporals.format(mov.dataMovimentacao, 'dd/MM/yyyy HH:mm')}"></td>
+                                <td th:text="${mov.produto != null ? mov.produto.nome : 'Produto Excluído'}"></td>
+                                <td>
+                                    <span th:switch="${mov.tipo.name()}" class="badge"
+                                        th:classappend=
+                                            "${mov.tipo.name() == 'ENTRADA' ? 'badge-success' : 
+                                            (mov.tipo.name() == 'SAIDA' ? 'badge-warning' : 
+                                            (mov.tipo.name() == 'AJUSTE_POSITIVO' ? 'badge-info' : 
+                                            (mov.tipo.name() == 'AJUSTE_NEGATIVO' ? 'badge-secondary' : 'badge-danger')))}">
+                                        <span th:text="${mov.tipo.name().replace('_', ' ')}"></span>
+                                    </span>
+                                </td>
+                                <td th:text="${mov.quantidadeMovimentada}"></td>
+                                <td th:text="${mov.quantidadeAnterior}"></td>
+                                <td th:text="${mov.quantidadePosterior}"></td>
+                                <td th:text="${mov.usuario != null ? mov.usuario.username : 'N/A'}"></td>
+                                <td th:text="${mov.observacao}"></td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(movimentacoes)}">
+                                <td colspan="8" class="text-center">Nenhuma movimentação registrada.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Paginação -->
+                <div th:replace="fragments/pagination :: pagination"></div>
             </div>
         </div>
     </section>

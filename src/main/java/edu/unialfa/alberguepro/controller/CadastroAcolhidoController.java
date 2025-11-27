@@ -88,14 +88,6 @@ public class CadastroAcolhidoController {
             }
         }
 
-        if (acolhido.getCertidaoNascimento() == null || acolhido.getCertidaoNascimento().trim().isEmpty()) {
-            result.rejectValue("certidaoNascimento", "campo.obrigatorio", "A certidão de nascimento é obrigatória.");
-        }
-
-        if (acolhido.getFiliacao() == null || acolhido.getFiliacao().trim().isEmpty()) {
-            result.rejectValue("filiacao", "campo.obrigatorio", "A filiação é obrigatória.");
-        }
-
         if (acolhido.getEstadoCivil() == null) {
             result.rejectValue("estadoCivil", "campo.obrigatorio", "O estado civil é obrigatório.");
         } else if (acolhido.getEstadoCivil() == CadastroAcolhido.EstadoCivil.Casado
@@ -158,7 +150,7 @@ public class CadastroAcolhidoController {
             result.rejectValue("usaDrogas", "campo.obrigatorio", "Informe se utiliza drogas.");
         } else if (acolhido.getUsaDrogas() == CadastroAcolhido.UsaDrogas.Sim
                 && (acolhido.getQualDroga() == null || acolhido.getQualDroga().trim().isEmpty())) {
-            result.rejectValue("qualDroga", "campo.obrigatorio", "Informe qual droga utiliza.");
+            result.rejectValue("qualDroga", "campo.obrigatorio", "Informe a droga utilizada.");
         }
 
         if (acolhido.getSituacaoRua() == null) {
@@ -255,11 +247,16 @@ public class CadastroAcolhidoController {
 
         acolhido.setCpf(cpfLimpo);
         service.salvar(acolhido);
+        String mensagem = (acolhido.getId() != null) ? "Acolhido atualizado com sucesso!" : "Acolhido cadastrado com sucesso!";
+        redirectAttributes.addFlashAttribute("successMessage", mensagem);
         return "redirect:/cadastroAcolhido/listar";
     }
 
     @GetMapping("listar")
     public String listar(@RequestParam(required = false) String filtro,
+                        @RequestParam(required = false) String sexo,
+                        @RequestParam(required = false) Integer idadeMin,
+                        @RequestParam(required = false) Integer idadeMax,
                         @RequestParam(required = false) Integer diasPermanencia,
                         @RequestParam(defaultValue = "0") int page,
                         @RequestParam(defaultValue = "15") int size,
@@ -268,7 +265,6 @@ public class CadastroAcolhidoController {
                         Model model) {
         org.springframework.data.domain.Page<CadastroAcolhido> pageResult;
         
-        // Criar ordenação
         org.springframework.data.domain.Sort.Direction direction = dir.equals("desc") ? 
             org.springframework.data.domain.Sort.Direction.DESC : org.springframework.data.domain.Sort.Direction.ASC;
         org.springframework.data.domain.Sort sortObj = org.springframework.data.domain.Sort.by(direction, sort);
@@ -276,13 +272,9 @@ public class CadastroAcolhidoController {
         if (diasPermanencia != null && diasPermanencia > 0) {
             List<CadastroAcolhido> acolhidos = service.buscarAcolhidosPermanenciaProlongada(diasPermanencia);
             
-            if (filtro != null && !filtro.trim().isEmpty()) {
-                acolhidos = acolhidos.stream()
-                    .filter(a -> a.getNome().toLowerCase().contains(filtro.toLowerCase()))
-                    .toList();
-            }
+            // Aplicar filtros adicionais
+            acolhidos = aplicarFiltros(acolhidos, filtro, sexo, idadeMin, idadeMax);
             
-            // Ordenar manualmente a lista
             acolhidos = ordenarLista(acolhidos, sort, direction);
             
             int start = Math.min(page * size, acolhidos.size());
@@ -292,21 +284,42 @@ public class CadastroAcolhidoController {
                 org.springframework.data.domain.PageRequest.of(page, size, sortObj), acolhidos.size());
         } else {
             org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size, sortObj);
-            if (filtro != null && !filtro.trim().isEmpty()) {
-                pageResult = service.buscarPorNomePaginado(filtro, pageable);
-            } else {
-                pageResult = service.listarTodosPaginado(pageable);
-            }
+            pageResult = service.buscarComFiltros(filtro, sexo, idadeMin, idadeMax, pageable);
         }
 
         model.addAttribute("acolhidos", pageResult.getContent());
         model.addAttribute("page", pageResult);
         model.addAttribute("filtro", filtro);
+        model.addAttribute("sexo", sexo);
+        model.addAttribute("idadeMin", idadeMin);
+        model.addAttribute("idadeMax", idadeMax);
         model.addAttribute("diasPermanencia", diasPermanencia);
         model.addAttribute("size", size);
         model.addAttribute("sort", sort);
         model.addAttribute("dir", dir);
         return "cadastroAcolhido/lista";
+    }
+    
+    private List<CadastroAcolhido> aplicarFiltros(List<CadastroAcolhido> acolhidos, String filtro, String sexo, Integer idadeMin, Integer idadeMax) {
+        java.util.stream.Stream<CadastroAcolhido> stream = acolhidos.stream();
+        
+        if (filtro != null && !filtro.trim().isEmpty()) {
+            stream = stream.filter(a -> a.getNome().toLowerCase().contains(filtro.toLowerCase()));
+        }
+        
+        if (sexo != null && !sexo.trim().isEmpty()) {
+            stream = stream.filter(a -> sexo.equalsIgnoreCase(a.getSexo().name()));
+        }
+        
+        if (idadeMin != null) {
+            stream = stream.filter(a -> a.getIdade() != null && a.getIdade() >= idadeMin);
+        }
+        
+        if (idadeMax != null) {
+            stream = stream.filter(a -> a.getIdade() != null && a.getIdade() <= idadeMax);
+        }
+        
+        return stream.collect(java.util.stream.Collectors.toList());
     }
     
     private List<CadastroAcolhido> ordenarLista(List<CadastroAcolhido> lista, String campo, org.springframework.data.domain.Sort.Direction direction) {
@@ -437,9 +450,15 @@ public class CadastroAcolhidoController {
     }
 
     @GetMapping("/relatorio/estrategico-pdf")
-    public ResponseEntity<byte[]> relatorioEstrategicoPdf() {
+    public ResponseEntity<byte[]> relatorioEstrategicoPdf(@RequestParam(required = false) String filtro,
+                                                           @RequestParam(required = false) String sexo,
+                                                           @RequestParam(required = false) Integer idadeMin,
+                                                           @RequestParam(required = false) Integer idadeMax) {
         try {
             List<CadastroAcolhido> todosAcolhidos = service.listarTodos();
+            
+            // Aplicar filtros se fornecidos
+            todosAcolhidos = aplicarFiltros(todosAcolhidos, filtro, sexo, idadeMin, idadeMax);
             
             // RESUMO EXECUTIVO
             long totalAcolhidos = todosAcolhidos.size();

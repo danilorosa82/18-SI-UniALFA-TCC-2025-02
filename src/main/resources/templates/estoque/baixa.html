@@ -67,9 +67,14 @@
                     <div class="col-md-2">
                         <div class="form-group">
                             <label>&nbsp;</label>
-                            <button class="btn btn-primary btn-block" type="submit">
-                                <i class="fas fa-search"></i> Filtrar
-                            </button>
+                            <div class="btn-group btn-block">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i> Filtrar
+                                </button>
+                                <a th:href="@{/estoque/baixa}" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Limpar
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -101,15 +106,15 @@
                     <td th:text="${produto.unidade.nome}">kg</td>
                     <td>
                         <!-- Form pra dar baixa em cada produto -->
-                        <form th:action="@{/estoque/dar-baixa}" method="post" class="form-inline baixa-form" 
+                        <form th:action="@{/estoque/dar-baixa}" method="post" class="baixa-form" 
                               th:data-produto-nome="${produto.nome}" 
                               th:data-quantidade-max="${produto.quantidade}">
                             <!-- ID do produto escondido -->
                             <input type="hidden" name="produtoId" th:value="${produto.id}" />
-                            <div class="input-group">
+                            <div class="input-group" style="width: 100%;">
                                 <!-- Campo pra por a quantidade da baixa -->
                                 <input type="number" name="quantidade" class="form-control quantidade-input" 
-                                       placeholder="0" min="1" th:max="${produto.quantidade}">
+                                       placeholder="0" min="1" th:max="${produto.quantidade}" style="flex: 1;">
                                 <div class="input-group-append">
                                     <button type="submit" class="btn btn-success">Salvar</button>
                                 </div>
@@ -120,9 +125,32 @@
                 </tbody>
             </table>
             </div>
+            <!-- Paginação -->
+            <div th:replace="fragments/pagination :: pagination"></div>
         </div>
     </div>
 </section>
+<style>
+    /* Garantir alinhamento consistente dos inputs de quantidade */
+    .baixa-form {
+        margin: 0;
+        width: 100%;
+    }
+    
+    .baixa-form .input-group {
+        display: flex;
+        width: 100%;
+    }
+    
+    .baixa-form .quantidade-input {
+        min-width: 0;
+        flex: 1 1 auto;
+    }
+    
+    .baixa-form .btn {
+        white-space: nowrap;
+    }
+</style>
 <script>
     // Função para fechar o banner
     function closeBanner(bannerId) {
