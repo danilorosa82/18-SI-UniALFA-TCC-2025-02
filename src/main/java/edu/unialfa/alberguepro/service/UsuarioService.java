@@ -148,10 +148,9 @@ public class UsuarioService {
             throw new IllegalStateException("Apenas Masters podem ativar/desativar outros Masters.");
         }
 
-        // Impedir que um admin desative outro admin ou master
-        if (isAdmin && !isMaster && 
-            ("ADMIN".equals(usuario.getRole()) || "MASTER".equals(usuario.getRole()))) {
-            throw new IllegalStateException("Não é permitido desativar administradores ou usuários master.");
+        // Impedir que Admin altere status de outro Admin
+        if ("ADMIN".equals(usuario.getRole()) && isAdmin && !isMaster && !usuario.getUsername().equals(usernameLogado)) {
+            throw new IllegalStateException("Administradores não podem ativar/desativar outros administradores.");
         }
 
         // Inverte o status atual (se era true, vira false; se era false, vira true)
@@ -222,7 +221,7 @@ public class UsuarioService {
         }
 
         // Exige senha atual SOMENTE se o próprio usuário estiver alterando sua senha
-        // Admin/Master alterando senha de outros não precisam informar senha atual
+        // Master alterando senha de outros não precisa informar senha atual
         if (isSelf) {
             if (senhaAtual == null || !passwordEncoder.matches(senhaAtual, usuario.getPassword())) {
                 throw new IllegalArgumentException("Senha atual incorreta.");
