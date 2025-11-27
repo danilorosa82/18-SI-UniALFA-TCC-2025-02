@@ -88,14 +88,6 @@ public class CadastroAcolhidoController {
             }
         }
 
-        if (acolhido.getCertidaoNascimento() == null || acolhido.getCertidaoNascimento().trim().isEmpty()) {
-            result.rejectValue("certidaoNascimento", "campo.obrigatorio", "A certidão de nascimento é obrigatória.");
-        }
-
-        if (acolhido.getFiliacao() == null || acolhido.getFiliacao().trim().isEmpty()) {
-            result.rejectValue("filiacao", "campo.obrigatorio", "A filiação é obrigatória.");
-        }
-
         if (acolhido.getEstadoCivil() == null) {
             result.rejectValue("estadoCivil", "campo.obrigatorio", "O estado civil é obrigatório.");
         } else if (acolhido.getEstadoCivil() == CadastroAcolhido.EstadoCivil.Casado
